@@ -41,9 +41,10 @@ const InformasiPage = {
       { label: 'Pimpinan', key: 'head' },
       { label: 'Status', render: r => r.active ? UI.badge('approved', 'Aktif') : UI.badge('draft', 'Nonaktif') },
       {
-        label: 'Aksi', render: () => `
-          <button class="btn btn-ghost btn-sm" title="Edit">✏️</button>
-          <button class="btn btn-ghost btn-sm" title="Nonaktifkan">🚫</button>` }
+        label: 'Aksi', render: r => `
+          <button class="btn btn-ghost btn-sm" title="Edit" onclick="InformasiPage.showEditUnit('${r.id}')">✏️</button>
+          <button class="btn btn-ghost btn-sm" title="Hapus" onclick="InformasiPage.confirmDeleteUnit('${r.id}')">🗑️</button>`
+      }
     ], MockData.units)}`;
   },
 
@@ -103,7 +104,8 @@ const InformasiPage = {
     const head = document.getElementById('add-unit-head')?.value?.trim() || '';
     const active = document.getElementById('add-unit-status')?.value === 'true';
     if (!code || !name) {
-      alert('Kode dan Nama Unit Kerja wajib diisi!');
+      const el = !code ? document.getElementById('add-unit-code') : document.getElementById('add-unit-name');
+      if (el) { el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; }
       return;
     }
     MockData.units.push({
@@ -113,6 +115,78 @@ const InformasiPage = {
     try { localStorage.setItem('kinerjaku_units', JSON.stringify(MockData.units)); } catch (e) { }
     MockData.pushActivityLog('create', 'Informasi', `Menambah unit kerja baru "${name}"`);
     MockData.pushNotification('info', 'Unit kerja ditambahkan', `Unit kerja "${name}" berhasil ditambahkan.`);
+    App.closeModal();
+    App.renderPage();
+  },
+
+  showEditUnit(unitId) {
+    const u = MockData.getUnit(unitId);
+    if (!u) return;
+    const parentOptions = MockData.units.filter(x => x.level <= 1 && x.id !== unitId).sort((a, b) => a.code.localeCompare(b.code)).map(x =>
+      `<option value="${x.id}" ${u.parentId === x.id ? 'selected' : ''}>${x.code} - ${x.name}</option>`
+    ).join('');
+    const fS = 'display:flex;align-items:center;margin-bottom:16px';
+    const lS = 'width:150px;font-weight:600;font-size:13px;color:#333;flex-shrink:0';
+    const content = `
+      <div style="${fS}"><label style="${lS}">Kode</label><input id="edit-u-code" class="form-input" value="${u.code}" style="flex:1"></div>
+      <div style="${fS}"><label style="${lS}">Nama Unit</label><input id="edit-u-name" class="form-input" value="${u.name}" style="flex:1"></div>
+      <div style="${fS}"><label style="${lS}">Level</label>
+        <select id="edit-u-level" class="form-select" style="flex:1">
+          ${[0, 1, 2, 3].map(l => `<option value="${l}" ${u.level === l ? 'selected' : ''}>${l}</option>`).join('')}
+        </select></div>
+      <div style="${fS}"><label style="${lS}">Unit Kerja Atasan</label>
+        <select id="edit-u-parent" class="form-select" style="flex:1"><option value="">— Tidak ada —</option>${parentOptions}</select></div>
+      <div style="${fS}"><label style="${lS}">Pimpinan</label><input id="edit-u-head" class="form-input" value="${u.head || ''}" style="flex:1"></div>
+      <div style="${fS}"><label style="${lS}">Status</label>
+        <select id="edit-u-status" class="form-select" style="flex:1">
+          <option value="true" ${u.active !== false ? 'selected' : ''}>Aktif</option>
+          <option value="false" ${u.active === false ? 'selected' : ''}>Non-Aktif</option>
+        </select></div>`;
+    const footer = `
+      <button class="btn btn-ghost" onclick="App.closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="InformasiPage.saveEditUnit('${unitId}')">💾 Simpan</button>`;
+    document.getElementById('modal-container').innerHTML = UI.modal('Edit Unit Kerja', content, footer);
+  },
+
+  saveEditUnit(unitId) {
+    const u = MockData.getUnit(unitId);
+    if (!u) return;
+    const name = document.getElementById('edit-u-name')?.value?.trim();
+    if (!name) { document.getElementById('edit-u-name').style.border = '2px solid #e74c3c'; return; }
+    u.code = document.getElementById('edit-u-code')?.value?.trim() || u.code;
+    u.name = name;
+    u.level = parseInt(document.getElementById('edit-u-level')?.value) || 0;
+    u.parentId = document.getElementById('edit-u-parent')?.value || null;
+    u.head = document.getElementById('edit-u-head')?.value?.trim() || '';
+    u.active = document.getElementById('edit-u-status')?.value === 'true';
+    try { localStorage.setItem('kinerjaku_units', JSON.stringify(MockData.units)); } catch (e) { }
+    MockData.pushActivityLog('edit', 'Informasi', `Mengubah unit kerja "${name}"`);
+    App.closeModal();
+    App.renderPage();
+  },
+
+  confirmDeleteUnit(unitId) {
+    const u = MockData.getUnit(unitId);
+    if (!u) return;
+    if (u.level === 0) { alert('Unit kerja level 0 tidak dapat dihapus!'); return; }
+    const content = `
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:3rem;margin-bottom:12px">⚠️</div>
+        <p style="font-size:15px;color:#333;margin:0 0 8px">Apakah Anda yakin ingin menghapus unit kerja <strong>"${u.name}"</strong>?</p>
+        <p style="font-size:13px;color:#718096;margin:0">Tindakan ini tidak dapat dibatalkan.</p>
+      </div>`;
+    const footer = `
+      <button class="btn btn-ghost" onclick="App.closeModal()">Batal</button>
+      <button class="btn" style="background:#dc2626;color:#fff;border:none;padding:6px 20px" onclick="InformasiPage.deleteUnit('${unitId}')">🗑️ Hapus</button>`;
+    document.getElementById('modal-container').innerHTML = UI.modal('Konfirmasi Hapus', content, footer);
+  },
+
+  deleteUnit(unitId) {
+    const idx = MockData.units.findIndex(u => u.id === unitId);
+    const name = idx >= 0 ? MockData.units[idx].name : '';
+    if (idx >= 0) MockData.units.splice(idx, 1);
+    try { localStorage.setItem('kinerjaku_units', JSON.stringify(MockData.units)); } catch (e) { }
+    MockData.pushActivityLog('delete', 'Informasi', `Menghapus unit kerja "${name}"`);
     App.closeModal();
     App.renderPage();
   },
@@ -209,8 +283,7 @@ const InformasiPage = {
       <div style="border:1px solid #dee2e6;border-radius:4px;padding:16px 20px;margin-bottom:16px;background:#fff;display:flex;align-items:center;justify-content:space-between">
         <h2 style="font-size:18px;font-weight:700;margin:0">Daftar Pengguna</h2>
         <div style="display:flex;gap:6px">
-          ${['admin_pusat'].includes(MockData.currentUser.roleId) ? '<button style="padding:6px 16px;font-size:13px;background:#5cb85c;border:1px solid #5cb85c;color:#fff;cursor:pointer;border-radius:4px" onclick="InformasiPage.showAddPengguna()">Tambah</button>' : ''}
-          <button style="padding:6px 16px;font-size:13px;background:#5bc0de;border:1px solid #5bc0de;color:#fff;cursor:pointer;border-radius:4px">Tutup</button>
+          ${['admin_pusat'].includes(MockData.currentUser.roleId) ? '<button style="padding:6px 16px;font-size:13px;background:#5cb85c;border:1px solid #5cb85c;color:#fff;cursor:pointer;border-radius:4px" onclick="InformasiPage.showAddPengguna()">Tambah Pengguna</button>' : ''}
         </div>
       </div>
       <div style="border:1px solid #dee2e6;border-radius:4px;overflow-x:auto;background:#fff">
@@ -250,28 +323,36 @@ const InformasiPage = {
       { group: 'Pengukuran dan Penilaian', items: ['Pengukuran Kinerja', 'Status Pengukuran', 'Validasi Capaian Kinerja', 'Verifikasi Capaian Kinerja', 'Realisasi Rencana Aksi', 'Kinerja Dekon/TP', 'Laporan Kinerja'] },
       { group: 'Evaluasi', items: ['Komponen/Sub Komponen/Kriteria', 'LKE', 'LKE Gabungan', 'Rekomendasi & Tindak Lanjut'] }
     ];
+    // Load saved permissions
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem('kinerjaku_access_' + username)) || {}; } catch (e) { }
     const isAdminUser = username === 'admin' || username === 'auditor';
     const thS = 'padding:8px 12px;font-weight:700;font-size:12px;border-bottom:2px solid #dee2e6;text-align:center';
     const tdS = 'padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9';
-    const sel = (val) => `<select style="padding:3px 6px;font-size:12px;border:1px solid #d1d5db;border-radius:4px;background:#fff5e6;color:#333;min-width:60px"><option>${val}</option><option>${val === 'Iya' ? 'Tidak' : 'Iya'}</option></select>`;
+    const sel = (itemKey, perm, defaultVal) => {
+      const val = saved[itemKey] ? (saved[itemKey][perm] || defaultVal) : defaultVal;
+      return `<select data-item="${itemKey}" data-perm="${perm}" style="padding:3px 6px;font-size:12px;border:1px solid #d1d5db;border-radius:4px;background:${val === 'Iya' ? '#e8f5e9' : '#fff5e6'};color:#333;min-width:60px"><option ${val === 'Iya' ? 'selected' : ''}>Iya</option><option ${val === 'Tidak' ? 'selected' : ''}>Tidak</option></select>`;
+    };
     let rows = '';
     menuGroups.forEach(g => {
       rows += `<tr><td colspan="5" style="${tdS};font-weight:700;color:#0C4A6E;background:#f8fafc;padding:10px 12px">${g.group}</td></tr>`;
       g.items.forEach(item => {
-        const hasAccess = isAdminUser || !['Skor Kinerja', 'Perspektif'].includes(item);
-        const canDelete = isAdminUser || !['Informasi Unit Kerja', 'Skor Kinerja', 'Perspektif'].includes(item);
+        const key = item.replace(/[^a-zA-Z0-9]/g, '_');
+        const defaultAccess = isAdminUser || !['Skor Kinerja', 'Perspektif'].includes(item);
+        const hasAccess = saved[key] ? saved[key].access : defaultAccess;
+        const defaultDelete = isAdminUser || !['Informasi Unit Kerja', 'Skor Kinerja', 'Perspektif'].includes(item);
         rows += `<tr>
           <td style="${tdS};padding-left:28px">${item}</td>
-          <td style="${tdS};text-align:center"><input type="checkbox" ${hasAccess ? 'checked' : ''} style="width:16px;height:16px;accent-color:#3b82f6"></td>
-          <td style="${tdS};text-align:center">${hasAccess ? sel('Iya') : ''}</td>
-          <td style="${tdS};text-align:center">${hasAccess ? sel(canDelete ? 'Iya' : 'Tidak') : ''}</td>
-          <td style="${tdS};text-align:center">${hasAccess ? sel('Iya') : ''}</td>
+          <td style="${tdS};text-align:center"><input type="checkbox" data-item="${key}" data-perm="access" ${hasAccess ? 'checked' : ''} style="width:16px;height:16px;accent-color:#3b82f6"></td>
+          <td style="${tdS};text-align:center">${sel(key, 'tambah', 'Iya')}</td>
+          <td style="${tdS};text-align:center">${sel(key, 'hapus', defaultDelete ? 'Iya' : 'Tidak')}</td>
+          <td style="${tdS};text-align:center">${sel(key, 'edit', 'Iya')}</td>
         </tr>`;
       });
     });
     const content = `
-      <div style="margin-bottom:16px"><strong>User :</strong> ${username}</div>
-      <div style="max-height:60vh;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px">
+      <div style="margin-bottom:16px"><strong>User :</strong> ${username.toUpperCase()}</div>
+      <div id="akses-table" style="max-height:60vh;overflow-y:auto;border:1px solid #dee2e6;border-radius:4px">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr>
             <th style="${thS};text-align:left;width:auto">Menu</th>
@@ -285,35 +366,63 @@ const InformasiPage = {
       </div>`;
     const footer = `
       <button class="btn" style="background:#d9534f;color:#fff;border:none;padding:6px 20px" onclick="App.closeModal()">Tutup</button>
-      <button class="btn" style="background:#337ab7;color:#fff;border:none;padding:6px 20px" onclick="App.closeModal()">Simpan</button>`;
+      <button class="btn" style="background:#337ab7;color:#fff;border:none;padding:6px 20px" onclick="InformasiPage.saveAksesMenu('${username}')">Simpan</button>`;
     document.getElementById('modal-container').innerHTML = UI.modal('Akses User', content, footer, 'lg');
+  },
+
+  saveAksesMenu(username) {
+    const container = document.getElementById('akses-table');
+    if (!container) return;
+    const perms = {};
+    // Read checkboxes
+    container.querySelectorAll('input[type="checkbox"][data-item]').forEach(cb => {
+      const key = cb.getAttribute('data-item');
+      if (!perms[key]) perms[key] = {};
+      perms[key].access = cb.checked;
+    });
+    // Read selects
+    container.querySelectorAll('select[data-item]').forEach(sel => {
+      const key = sel.getAttribute('data-item');
+      const perm = sel.getAttribute('data-perm');
+      if (!perms[key]) perms[key] = {};
+      perms[key][perm] = sel.value;
+    });
+    try { localStorage.setItem('kinerjaku_access_' + username, JSON.stringify(perms)); } catch (e) { }
+    MockData.pushActivityLog('edit', 'Informasi', `Mengubah akses menu pengguna "${username}"`);
+    MockData.pushNotification('info', 'Akses diperbarui', `Akses menu pengguna "${username}" berhasil disimpan.`);
+    App.closeModal();
   },
 
   showEditUser(username, unitName) {
     const account = LoginPage.accounts.find(a => a.username === username);
     const currentPass = account ? account.password : 's4k1pKKP';
+    const currentUnitName = account ? (account.unitName || unitName) : unitName;
     const roleMap = {
       'admin_pusat': 'Admin', 'unit_level0': 'Operator Level 0', 'unit_level1': 'Operator Level I',
       'unit_level2': 'Operator Level II', 'unit_level3': 'Operator Level III', 'auditor': 'Auditor',
       'operator_unit': 'Operator Level I', 'tamu': 'Viewer'
     };
     const currentTipe = account ? (roleMap[account.roleId] || 'Viewer') : 'Viewer';
-    const unitOptions = MockData.units.sort((a, b) => a.code.localeCompare(b.code)).map(u =>
+    const lingkupOptions = MockData.units.filter(u => u.level <= 1).sort((a, b) => a.code.localeCompare(b.code)).map(u =>
       `<option value="${u.id}" ${u.name === unitName ? 'selected' : ''}>${u.code} - ${u.name}</option>`
     ).join('');
     const tipeOptions = ['Admin', 'Operator Level 0', 'Operator Level I', 'Operator Level II', 'Operator Level III', 'Auditor', 'Viewer'].map(t =>
       `<option ${t === currentTipe ? 'selected' : ''}>${t}</option>`
     ).join('');
     const fS = 'display:flex;align-items:center;margin-bottom:16px';
-    const lS = 'width:120px;font-weight:600;font-size:13px;color:#333;flex-shrink:0';
+    const lS = 'width:150px;font-weight:600;font-size:13px;color:#333;flex-shrink:0';
     const content = `
       <div style="${fS}">
+        <label style="${lS}">Unit Kerja Lingkup</label>
+        <select id="edit-lingkup" class="form-select" style="flex:1">${lingkupOptions}</select>
+      </div>
+      <div style="${fS}">
         <label style="${lS}">Unit Kerja</label>
-        <select id="edit-unit" class="form-select" style="flex:1">${unitOptions}</select>
+        <input id="edit-unit" class="form-input" value="${currentUnitName}" style="flex:1">
       </div>
       <div style="${fS}">
         <label style="${lS}">Nama User</label>
-        <input id="edit-username" class="form-input" value="${username}" style="flex:1" readonly>
+        <input id="edit-username" class="form-input" value="${username}" style="flex:1">
       </div>
       <div style="${fS}">
         <label style="${lS}">Password</label>
@@ -337,20 +446,26 @@ const InformasiPage = {
   },
 
   saveEditUser(originalUsername) {
+    const newUsername = document.getElementById('edit-username')?.value?.trim();
     const newPass = document.getElementById('edit-password')?.value?.trim();
     const newTipe = document.getElementById('edit-tipe')?.value;
-    if (!newPass) { alert('Password tidak boleh kosong!'); return; }
+    if (!newUsername) { const el = document.getElementById('edit-username'); el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; return; }
+    if (!newPass) { const el = document.getElementById('edit-password'); el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; return; }
+    if (newUsername !== originalUsername && LoginPage.accounts.find(a => a.username === newUsername)) { alert('Username sudah digunakan!'); return; }
     const account = LoginPage.accounts.find(a => a.username === originalUsername);
     if (account) {
+      account.username = newUsername;
       account.password = newPass;
-      // Map tipe to roleId
+      account.unitName = document.getElementById('edit-unit')?.value?.trim() || account.unitName;
+      account.unitId = document.getElementById('edit-lingkup')?.value || account.unitId;
       const tipeMap = { 'Admin': 'admin_pusat', 'Operator Level 0': 'unit_level0', 'Operator Level I': 'unit_level1', 'Operator Level II': 'unit_level2', 'Operator Level III': 'unit_level3', 'Auditor': 'auditor', 'Viewer': 'tamu' };
       if (tipeMap[newTipe]) account.roleId = tipeMap[newTipe];
       try { localStorage.setItem('kinerjaku_accounts', JSON.stringify(LoginPage.accounts)); } catch (e) { }
     }
-    MockData.pushActivityLog('edit', 'Informasi', `Mengubah data pengguna "${originalUsername}"`);
-    MockData.pushNotification('info', 'Data pengguna diubah', `Data pengguna "${originalUsername}" berhasil diperbarui.`);
+    MockData.pushActivityLog('edit', 'Informasi', `Mengubah data pengguna "${originalUsername}"${newUsername !== originalUsername ? ` → "${newUsername}"` : ''}`);
+    MockData.pushNotification('info', 'Data pengguna diubah', `Data pengguna "${newUsername}" berhasil diperbarui.`);
     App.closeModal();
+    App.renderPage();
   },
 
   showAddPengguna() {
@@ -409,8 +524,8 @@ const InformasiPage = {
     const lingkupSel = document.getElementById('new-lingkup');
     const unitId = lingkupSel?.value || '';
     const unitName = document.getElementById('new-unit')?.value?.trim() || '';
-    if (!username) { alert('Username tidak boleh kosong!'); return; }
-    if (!password) { alert('Password tidak boleh kosong!'); return; }
+    if (!username) { const el = document.getElementById('new-username'); el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; return; }
+    if (!password) { const el = document.getElementById('new-password'); el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; return; }
     if (LoginPage.accounts.find(a => a.username === username)) { alert('Username sudah digunakan!'); return; }
     const tipeMap = { 'Admin': 'admin_pusat', 'Operator Level 0': 'unit_level0', 'Operator Level I': 'unit_level1', 'Operator Level II': 'unit_level2', 'Operator Level III': 'unit_level3', 'Auditor': 'auditor', 'Viewer': 'tamu' };
     const roleId = tipeMap[tipe] || 'tamu';
@@ -448,9 +563,10 @@ const InformasiPage = {
   },
 
   filterPenggunaTable(term) {
-    const container = document.querySelector('#main-content table');
-    if (!container) return;
-    const rows = container.querySelectorAll('tbody tr');
+    const tables = document.querySelectorAll('.main-content table');
+    const table = tables[tables.length - 1]; // last table is the pengguna table
+    if (!table) return;
+    const rows = table.querySelectorAll('tbody tr');
     const search = (term || '').toLowerCase();
     rows.forEach(row => {
       row.style.display = !search || row.textContent.toLowerCase().includes(search) ? '' : 'none';

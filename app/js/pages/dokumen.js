@@ -13,11 +13,6 @@ const DokumenPage = {
           <p class="text-muted" style="margin-top:4px">Pohon kinerja, manual indikator, dan dokumen kinerja</p>
         </div>
       </div>
-      ${UI.tabs([
-      { id: 'pohon', label: '🌳 Pohon Kinerja' },
-      { id: 'manual', label: '📖 Manual Indikator' },
-      { id: 'dokumen', label: '📄 Dokumen Kinerja', count: MockData.dokumen.length }
-    ], this.activeTab, 'DokumenPage.switchTab')}
       <div id="dokumen-content">${this.renderContent()}</div>`;
   },
 
@@ -190,7 +185,7 @@ const DokumenPage = {
     ];
     return `
       ${UI.toolbar('Cari manual indikator...', [
-      { label: '＋ Upload Manual', class: 'btn-primary', action: '' }
+      { label: '＋ Upload Manual', class: 'btn-primary', action: 'DokumenPage.showUploadManual()' }
     ])}
       ${UI.table([
       { label: 'Judul Manual', key: 'title' },
@@ -266,5 +261,37 @@ const DokumenPage = {
         </table>
         <div style="padding:10px 16px;font-size:12px;color:#888;border-top:1px solid #eee">Showing 1 to ${rows.length} of ${rows.length} entries</div>
       </div>`;
+  },
+
+  showUploadManual() {
+    const fS = 'display:flex;align-items:center;margin-bottom:16px';
+    const lS = 'width:140px;font-weight:600;font-size:13px;color:#333;flex-shrink:0';
+    const ikOptions = MockData.indikator.map(ik => `<option value="${ik.id}">${ik.code} - ${ik.name}</option>`).join('');
+    const content = `
+      <div style="${fS}">
+        <label style="${lS}">Judul Manual</label>
+        <input id="manual-title" class="form-input" placeholder="Judul dokumen manual" style="flex:1">
+      </div>
+      <div style="${fS}">
+        <label style="${lS}">Indikator Terkait</label>
+        <select id="manual-ik" class="form-select" style="flex:1">${ikOptions}</select>
+      </div>
+      <div style="${fS}">
+        <label style="${lS}">File</label>
+        <input type="file" id="manual-file" class="form-input" style="flex:1" accept=".pdf,.doc,.docx,.xls,.xlsx">
+      </div>`;
+    const footer = `
+      <button class="btn btn-ghost" onclick="App.closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="DokumenPage.saveUploadManual()">📤 Upload</button>`;
+    document.getElementById('modal-container').innerHTML = UI.modal('Upload Manual IKU', content, footer);
+  },
+
+  saveUploadManual() {
+    const title = document.getElementById('manual-title')?.value?.trim();
+    if (!title) { document.getElementById('manual-title').style.border = '2px solid #e74c3c'; return; }
+    MockData.pushActivityLog('upload', 'Dokumen', `Upload manual: "${title}"`);
+    MockData.pushNotification('success', 'Manual diupload', `Manual "${title}" berhasil diupload.`);
+    App.closeModal();
+    App.renderPage();
   }
 };

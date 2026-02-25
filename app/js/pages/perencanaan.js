@@ -157,8 +157,7 @@ const PerencanaanPage = {
   },
 
   openPohonKinerja(unitId) {
-    const unit = MockData.getUnit(unitId);
-    alert(`Pohon Kinerja: ${unit ? unit.name : unitId}\n\nFitur Pohon Kinerja akan ditampilkan di sini.`);
+    App.navigate('dokumen_pohon');
   },
 
   openSasaranDetail(unitId) {
@@ -647,7 +646,7 @@ const PerencanaanPage = {
       </div>
 
       ${UI.toolbar('Cari indikator...', [
-      { label: '📥 Export Excel', class: 'btn-secondary', action: '' }
+      { label: '📥 Export Excel', class: 'btn-secondary', action: 'PerencanaanPage.exportIndikatorExcel()' }
     ])}
       ${UI.table([
       { label: 'Kode', key: 'code' },
@@ -1030,5 +1029,20 @@ const PerencanaanPage = {
       <button class="btn btn-ghost" onclick="App.closeModal()">Batal</button>
       <button class="btn btn-primary" onclick="App.closeModal()">Simpan</button>`;
     document.getElementById('modal-container').innerHTML = UI.modal('Tambah Rencana Aksi', content, footer);
+  },
+
+  exportIndikatorExcel() {
+    const iks = MockData.indikator;
+    let csv = '\uFEFFNo,Kode,Nama Indikator,Sasaran,Satuan,Polaritas,Target Tahunan,Status\n';
+    iks.forEach((ik, i) => {
+      const s = MockData.getSasaran(ik.sasaranId);
+      csv += `${i + 1},"${ik.code}","${ik.name}","${s ? s.name : '-'}","${ik.unit}","${ik.polarity}","${ik.targetTahunan}","${ik.status}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'Indikator_Kinerja.csv'; a.click();
+    URL.revokeObjectURL(url);
+    MockData.pushActivityLog('export', 'Perencanaan', 'Export data indikator kinerja ke Excel/CSV');
   }
 };
