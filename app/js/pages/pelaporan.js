@@ -3,8 +3,16 @@
    ============================================ */
 
 const PelaporanPage = {
+  searchTerm: '',
   render() {
-    const laporan = MockData.laporan;
+    const search = (this.searchTerm || '').toLowerCase();
+    const laporan = MockData.laporan.filter(l => {
+      if (!search) return true;
+      return (l.unitName || '').toLowerCase().includes(search) ||
+        (l.status || '').toLowerCase().includes(search) ||
+        (l.createdBy || '').toLowerCase().includes(search) ||
+        (l.periodLabel || '').toLowerCase().includes(search);
+    });
     const isReviewer = ['admin_pusat', 'auditor', 'unit_level0'].includes(MockData.currentUser.roleId);
     return `
       <div class="page-header">
@@ -13,9 +21,15 @@ const PelaporanPage = {
           <p class="text-muted" style="margin-top:4px">Penyusunan, reviu, dan penerbitan laporan kinerja</p>
         </div>
       </div>
-      ${UI.toolbar('Cari laporan...', [
-      { label: '＋ Buat Laporan', class: 'btn-primary', action: 'PelaporanPage.showCreateLaporan()' }
-    ])}
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <div class="search-bar">
+            <span class="search-bar-icon">🔍</span>
+            <input type="text" placeholder="Cari laporan..." oninput="PelaporanPage.filterTable(this.value)" />
+          </div>
+        </div>
+        <div class="toolbar-right"><button class="btn btn-primary" onclick="PelaporanPage.showCreateLaporan()">＋ Buat Laporan</button></div>
+      </div>
       ${UI.table([
       { label: 'Unit Kerja', key: 'unitName' },
       { label: 'Periode', key: 'periodLabel' },
@@ -84,6 +98,16 @@ const PelaporanPage = {
       const action = statusAction[l.status] || l.status;
       return `<li class="timeline-item" style="cursor:pointer" onclick="PelaporanPage.showDetail('${l.id}')"><strong>${dateStr}</strong> — Laporan ${shortName} v${l.version} ${action}</li>`;
     }).join('');
+  },
+
+  // ── Search Filter ─────────────────────────
+  filterTable(term) {
+    const rows = document.querySelectorAll('.table-container table tbody tr');
+    const search = (term || '').toLowerCase();
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = !search || text.includes(search) ? '' : 'none';
+    });
   },
 
   // ── Review Modal ──────────────────────────

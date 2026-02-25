@@ -138,8 +138,8 @@ const DokumenPage = {
       </div>
       <div style="border:1px solid #dee2e6;border-radius:4px;overflow-x:auto;background:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #eee">
-          <div style="font-size:13px;color:#555"><select style="padding:3px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;margin-right:4px"><option>25</option><option>50</option><option>100</option></select> records per page</div>
-          <div style="font-size:13px;color:#555">Search: <input type="text" style="padding:3px 8px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:150px" /></div>
+          <div style="font-size:13px;color:#555"><select style="padding:3px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;margin-right:4px" onchange="UI.paginateTable(this)"><option>25</option><option>50</option><option>100</option></select> records per page</div>
+          <div style="font-size:13px;color:#555">Search: <input type="text" style="padding:3px 8px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:150px" oninput="EvaluasiPage.filterEvalTable(this.value)" /></div>
         </div>
         <table style="width:100%;border-collapse:collapse;min-width:1400px">
           <thead>
@@ -233,8 +233,8 @@ const DokumenPage = {
       </div>
       <div style="border:1px solid #dee2e6;border-radius:4px;overflow-x:auto;background:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #eee">
-          <div style="font-size:13px;color:#555"><select style="padding:3px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;margin-right:4px"><option>25</option><option>50</option><option>100</option></select> records per page</div>
-          <div style="font-size:13px;color:#555">Search: <input type="text" style="padding:3px 8px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:150px" /></div>
+          <div style="font-size:13px;color:#555"><select style="padding:3px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;margin-right:4px" onchange="UI.paginateTable(this)"><option>25</option><option>50</option><option>100</option></select> records per page</div>
+          <div style="font-size:13px;color:#555">Search: <input type="text" style="padding:3px 8px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:150px" oninput="EvaluasiPage.filterEvalTable(this.value)" /></div>
         </div>
         <table style="width:100%;border-collapse:collapse;min-width:1600px">
           <thead>

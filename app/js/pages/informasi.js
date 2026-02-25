@@ -138,19 +138,10 @@ const InformasiPage = {
       tamu: ['👁', '—', '—', '—', '—', '👁', '📄', '—'],
     };
 
-    const adminRows = [{ name: 'admin', unit: 'BIRO PERENCANAAN' }];
-    const level0Rows = [{ name: '0000000000', unit: 'KEMENTERIAN KELAUTAN DAN PERIKANAN' }];
-    const sortedUnits = MockData.units.sort((a, b) => (a.code || '').localeCompare(b.code || ''));
-    const level1Rows = sortedUnits.filter(u => u.level === 1).map(u => ({ name: u.code || u.name, unit: u.name }));
-    const level2Rows = sortedUnits.filter(u => u.level === 2).map(u => ({ name: u.code || u.name, unit: u.name }));
-    const level3Rows = sortedUnits.filter(u => u.level === 3).map(u => ({ name: u.code || u.name, unit: u.name }));
-    const auditorRows = [{ name: 'auditor', unit: 'INSPEKTORAT JENDERAL' }];
-    const externalRows = [
-      { name: 'kkp_menpanrb', unit: 'KEMENTERIAN KELAUTAN DAN PERIKANAN' },
-      { name: 'verifikator', unit: 'KEMENTERIAN KELAUTAN DAN PERIKANAN' },
-      { name: 'tamu', unit: 'KEMENTERIAN KELAUTAN DAN PERIKANAN' },
-    ];
-    const allRows = [...adminRows, ...level0Rows, ...level1Rows, ...level2Rows, ...level3Rows, ...auditorRows, ...externalRows];
+    const allRows = LoginPage.accounts.map(a => ({
+      name: a.username,
+      unit: a.unitName ? a.unitName.toUpperCase() : 'KEMENTERIAN KELAUTAN DAN PERIKANAN'
+    }));
     const thS = 'padding:8px 10px;font-weight:700;font-size:12px;border:1px solid #dee2e6;background:#f8f9fa;text-align:left;vertical-align:middle';
     const tdS = 'padding:8px 10px;font-size:13px;border:1px solid #eee;vertical-align:middle';
     const thM = 'padding:6px 8px;font-weight:700;font-size:11px;border:1px solid #dee2e6;background:#f8f9fa;text-align:center;vertical-align:middle';
@@ -218,14 +209,14 @@ const InformasiPage = {
       <div style="border:1px solid #dee2e6;border-radius:4px;padding:16px 20px;margin-bottom:16px;background:#fff;display:flex;align-items:center;justify-content:space-between">
         <h2 style="font-size:18px;font-weight:700;margin:0">Daftar Pengguna</h2>
         <div style="display:flex;gap:6px">
-          <button style="padding:6px 16px;font-size:13px;background:#5cb85c;border:1px solid #5cb85c;color:#fff;cursor:pointer;border-radius:4px">Tambah</button>
+          ${['admin_pusat'].includes(MockData.currentUser.roleId) ? '<button style="padding:6px 16px;font-size:13px;background:#5cb85c;border:1px solid #5cb85c;color:#fff;cursor:pointer;border-radius:4px" onclick="InformasiPage.showAddPengguna()">Tambah</button>' : ''}
           <button style="padding:6px 16px;font-size:13px;background:#5bc0de;border:1px solid #5bc0de;color:#fff;cursor:pointer;border-radius:4px">Tutup</button>
         </div>
       </div>
       <div style="border:1px solid #dee2e6;border-radius:4px;overflow-x:auto;background:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid #eee">
-          <div style="font-size:13px;color:#555"><select style="padding:3px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;margin-right:4px"><option>25</option><option>50</option><option>100</option></select> records per page</div>
-          <div style="font-size:13px;color:#555">Search: <input type="text" style="padding:3px 8px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:150px" /></div>
+          <div style="font-size:13px;color:#555"><select style="padding:3px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;margin-right:4px" onchange="UI.paginateTable(this)"><option>25</option><option>50</option><option>100</option></select> records per page</div>
+          <div style="font-size:13px;color:#555">Search: <input type="text" style="padding:3px 8px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:150px" oninput="InformasiPage.filterPenggunaTable(this.value)" /></div>
         </div>
         <table style="width:100%;border-collapse:collapse">
           <thead><tr>
@@ -240,9 +231,11 @@ const InformasiPage = {
           '<td style="' + tdS + '">' + r.name + '</td>' +
           '<td style="' + tdS + '">' + r.unit + '</td>' +
           '<td style="' + tdS + ';text-align:center">' +
-          '<button style="padding:3px 10px;font-size:11px;background:#5bc0de;border:1px solid #5bc0de;color:#fff;cursor:pointer;border-radius:3px;margin-right:4px" onclick="InformasiPage.showAksesMenu(\'' + r.name + '\')">' + 'Akses Menu</button>' +
-          '<button style="padding:3px 10px;font-size:11px;background:#f0ad4e;border:1px solid #f0ad4e;color:#fff;cursor:pointer;border-radius:3px;margin-right:4px" onclick="InformasiPage.showEditUser(\'' + r.name + '\',\'' + r.unit.replace(/'/g, '') + '\')">' + 'Edit</button>' +
-          '<button style="padding:3px 10px;font-size:11px;background:#d9534f;border:1px solid #d9534f;color:#fff;cursor:pointer;border-radius:3px">Hapus</button>' +
+          (['admin_pusat'].includes(MockData.currentUser.roleId) ?
+            '<button style="padding:3px 10px;font-size:11px;background:#5bc0de;border:1px solid #5bc0de;color:#fff;cursor:pointer;border-radius:3px;margin-right:4px" onclick="InformasiPage.showAksesMenu(\'' + r.name + '\')">' + 'Akses Menu</button>' +
+            '<button style="padding:3px 10px;font-size:11px;background:#f0ad4e;border:1px solid #f0ad4e;color:#fff;cursor:pointer;border-radius:3px;margin-right:4px" onclick="InformasiPage.showEditUser(\'' + r.name + '\',\'' + r.unit.replace(/'/g, '') + '\')">' + 'Edit</button>' +
+            '<button style="padding:3px 10px;font-size:11px;background:#d9534f;border:1px solid #d9534f;color:#fff;cursor:pointer;border-radius:3px" onclick="InformasiPage.confirmDeleteUser(\'' + r.name + '\')">' + 'Hapus</button>'
+            : '<span style="font-size:12px;color:#94a3b8">\u2014</span>') +
           '</td></tr>').join('')}
           </tbody>
         </table>
@@ -297,11 +290,19 @@ const InformasiPage = {
   },
 
   showEditUser(username, unitName) {
+    const account = LoginPage.accounts.find(a => a.username === username);
+    const currentPass = account ? account.password : 's4k1pKKP';
+    const roleMap = {
+      'admin_pusat': 'Admin', 'unit_level0': 'Operator Level 0', 'unit_level1': 'Operator Level I',
+      'unit_level2': 'Operator Level II', 'unit_level3': 'Operator Level III', 'auditor': 'Auditor',
+      'operator_unit': 'Operator Level I', 'tamu': 'Viewer'
+    };
+    const currentTipe = account ? (roleMap[account.roleId] || 'Viewer') : 'Viewer';
     const unitOptions = MockData.units.sort((a, b) => a.code.localeCompare(b.code)).map(u =>
       `<option value="${u.id}" ${u.name === unitName ? 'selected' : ''}>${u.code} - ${u.name}</option>`
     ).join('');
     const tipeOptions = ['Admin', 'Operator Level 0', 'Operator Level I', 'Operator Level II', 'Operator Level III', 'Auditor', 'Viewer'].map(t =>
-      `<option>${t}</option>`
+      `<option ${t === currentTipe ? 'selected' : ''}>${t}</option>`
     ).join('');
     const fS = 'display:flex;align-items:center;margin-bottom:16px';
     const lS = 'width:120px;font-weight:600;font-size:13px;color:#333;flex-shrink:0';
@@ -312,11 +313,11 @@ const InformasiPage = {
       </div>
       <div style="${fS}">
         <label style="${lS}">Nama User</label>
-        <input id="edit-username" class="form-input" value="${username}" style="flex:1">
+        <input id="edit-username" class="form-input" value="${username}" style="flex:1" readonly>
       </div>
       <div style="${fS}">
         <label style="${lS}">Password</label>
-        <input id="edit-password" class="form-input" value="s4k1pKKP" style="flex:1">
+        <input id="edit-password" class="form-input" value="${currentPass}" style="flex:1">
       </div>
       <div style="${fS}">
         <label style="${lS}">Tipe User</label>
@@ -331,8 +332,129 @@ const InformasiPage = {
       </div>`;
     const footer = `
       <button class="btn btn-ghost" onclick="App.closeModal()">Batal</button>
-      <button class="btn" style="background:#337ab7;color:#fff;border:none;padding:6px 20px" onclick="App.closeModal()">Submit</button>`;
+      <button class="btn" style="background:#337ab7;color:#fff;border:none;padding:6px 20px" onclick="InformasiPage.saveEditUser('${username}')">Submit</button>`;
     document.getElementById('modal-container').innerHTML = UI.modal('Edit Data Pengguna', content, footer);
+  },
+
+  saveEditUser(originalUsername) {
+    const newPass = document.getElementById('edit-password')?.value?.trim();
+    const newTipe = document.getElementById('edit-tipe')?.value;
+    if (!newPass) { alert('Password tidak boleh kosong!'); return; }
+    const account = LoginPage.accounts.find(a => a.username === originalUsername);
+    if (account) {
+      account.password = newPass;
+      // Map tipe to roleId
+      const tipeMap = { 'Admin': 'admin_pusat', 'Operator Level 0': 'unit_level0', 'Operator Level I': 'unit_level1', 'Operator Level II': 'unit_level2', 'Operator Level III': 'unit_level3', 'Auditor': 'auditor', 'Viewer': 'tamu' };
+      if (tipeMap[newTipe]) account.roleId = tipeMap[newTipe];
+      try { localStorage.setItem('kinerjaku_accounts', JSON.stringify(LoginPage.accounts)); } catch (e) { }
+    }
+    MockData.pushActivityLog('edit', 'Informasi', `Mengubah data pengguna "${originalUsername}"`);
+    MockData.pushNotification('info', 'Data pengguna diubah', `Data pengguna "${originalUsername}" berhasil diperbarui.`);
+    App.closeModal();
+  },
+
+  showAddPengguna() {
+    const lingkupOptions = MockData.units.filter(u => u.level <= 1).sort((a, b) => a.code.localeCompare(b.code)).map(u =>
+      `<option value="${u.id}" data-name="${u.name}">${u.code} - ${u.name}</option>`
+    ).join('');
+    const tipeOptions = ['Admin', 'Operator Level 0', 'Operator Level I', 'Operator Level II', 'Operator Level III', 'Auditor', 'Viewer'].map(t =>
+      `<option>${t}</option>`
+    ).join('');
+    const fS = 'display:flex;align-items:center;margin-bottom:16px';
+    const lS = 'width:150px;font-weight:600;font-size:13px;color:#333;flex-shrink:0';
+    const content = `
+      <div style="${fS}">
+        <label style="${lS}">Lingkup Unit Kerja</label>
+        <select id="new-lingkup" class="form-select" style="flex:1" onchange="InformasiPage.updateUnitDropdown(this.value)">${lingkupOptions}</select>
+      </div>
+      <div style="${fS}">
+        <label style="${lS}">Unit Kerja</label>
+        <input id="new-unit" class="form-input" placeholder="Nama unit kerja" style="flex:1">
+      </div>
+      <div style="${fS}">
+        <label style="${lS}">Username</label>
+        <input id="new-username" class="form-input" placeholder="Username login" style="flex:1">
+      </div>
+      <div style="${fS}">
+        <label style="${lS}">Password</label>
+        <input id="new-password" class="form-input" value="s4k1pKKP" style="flex:1">
+      </div>
+      <div style="${fS}">
+        <label style="${lS}">Tipe User</label>
+        <select id="new-tipe" class="form-select" style="flex:1">${tipeOptions}</select>
+      </div>`;
+    const footer = `
+      <button class="btn btn-ghost" onclick="App.closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="InformasiPage.saveAddPengguna()">💾 Simpan</button>`;
+    document.getElementById('modal-container').innerHTML = UI.modal('Tambah Pengguna Baru', content, footer);
+    // Auto-populate unit dropdown for first lingkup
+    const firstLingkup = MockData.units.filter(u => u.level <= 1).sort((a, b) => a.code.localeCompare(b.code))[0];
+    if (firstLingkup) this.updateUnitDropdown(firstLingkup.id);
+  },
+
+  updateUnitDropdown(lingkupId) {
+    const unitSel = document.getElementById('new-unit');
+    if (!unitSel) return;
+    const children = MockData.units.filter(u => u.parentId === lingkupId).sort((a, b) => a.code.localeCompare(b.code));
+    const parent = MockData.getUnit(lingkupId);
+    let opts = parent ? `<option value="${parent.id}" data-name="${parent.name}">${parent.code} - ${parent.name}</option>` : '';
+    opts += children.map(u => `<option value="${u.id}" data-name="${u.name}">${u.code} - ${u.name}</option>`).join('');
+    unitSel.innerHTML = opts;
+  },
+
+  saveAddPengguna() {
+    const username = document.getElementById('new-username')?.value?.trim();
+    const password = document.getElementById('new-password')?.value?.trim();
+    const tipe = document.getElementById('new-tipe')?.value;
+    const lingkupSel = document.getElementById('new-lingkup');
+    const unitId = lingkupSel?.value || '';
+    const unitName = document.getElementById('new-unit')?.value?.trim() || '';
+    if (!username) { alert('Username tidak boleh kosong!'); return; }
+    if (!password) { alert('Password tidak boleh kosong!'); return; }
+    if (LoginPage.accounts.find(a => a.username === username)) { alert('Username sudah digunakan!'); return; }
+    const tipeMap = { 'Admin': 'admin_pusat', 'Operator Level 0': 'unit_level0', 'Operator Level I': 'unit_level1', 'Operator Level II': 'unit_level2', 'Operator Level III': 'unit_level3', 'Auditor': 'auditor', 'Viewer': 'tamu' };
+    const roleId = tipeMap[tipe] || 'tamu';
+    const newAccount = { username, password, unitId, unitName, roleId, role: tipe, fullName: unitName, avatar: username.substring(0, 2).toUpperCase(), nip: '-', email: username + '@kkp.go.id' };
+    LoginPage.accounts.push(newAccount);
+    try { localStorage.setItem('kinerjaku_accounts', JSON.stringify(LoginPage.accounts)); } catch (e) { }
+    MockData.pushActivityLog('create', 'Informasi', `Menambah pengguna baru "${username}"`);
+    MockData.pushNotification('success', 'Pengguna ditambahkan', `Pengguna "${username}" berhasil ditambahkan.`);
+    App.closeModal();
+    App.renderPage();
+  },
+
+  confirmDeleteUser(username) {
+    if (username === 'admin') { alert('Akun admin tidak dapat dihapus!'); return; }
+    const content = `
+      <div style="text-align:center;padding:20px 0">
+        <div style="font-size:3rem;margin-bottom:12px">⚠️</div>
+        <p style="font-size:15px;color:#333;margin:0 0 8px">Apakah Anda yakin ingin menghapus pengguna <strong>"${username}"</strong>?</p>
+        <p style="font-size:13px;color:#718096;margin:0">Tindakan ini tidak dapat dibatalkan.</p>
+      </div>`;
+    const footer = `
+      <button class="btn btn-ghost" onclick="App.closeModal()">Batal</button>
+      <button class="btn" style="background:#dc2626;color:#fff;border:none;padding:6px 20px" onclick="InformasiPage.deletePengguna('${username}')">🗑️ Hapus</button>`;
+    document.getElementById('modal-container').innerHTML = UI.modal('Konfirmasi Hapus', content, footer);
+  },
+
+  deletePengguna(username) {
+    const idx = LoginPage.accounts.findIndex(a => a.username === username);
+    if (idx >= 0) LoginPage.accounts.splice(idx, 1);
+    try { localStorage.setItem('kinerjaku_accounts', JSON.stringify(LoginPage.accounts)); } catch (e) { }
+    MockData.pushActivityLog('delete', 'Informasi', `Menghapus pengguna "${username}"`);
+    MockData.pushNotification('warning', 'Pengguna dihapus', `Pengguna "${username}" berhasil dihapus.`);
+    App.closeModal();
+    App.renderPage();
+  },
+
+  filterPenggunaTable(term) {
+    const container = document.querySelector('#main-content table');
+    if (!container) return;
+    const rows = container.querySelectorAll('tbody tr');
+    const search = (term || '').toLowerCase();
+    rows.forEach(row => {
+      row.style.display = !search || row.textContent.toLowerCase().includes(search) ? '' : 'none';
+    });
   },
 
   renderPanduan() {

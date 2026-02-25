@@ -27,11 +27,6 @@ const EvaluasiPage = {
           <p class="text-muted" style="margin-top:4px">Lembar kerja evaluasi, rekomendasi, dan tindak lanjut</p>
         </div>
       </div>
-      ${UI.tabs([
-      { id: 'evaluasi', label: '📝 Lembar Kerja Evaluasi', count: MockData.evaluasi.length },
-      { id: 'rekomendasi', label: '💡 Rekomendasi', count: MockData.rekomendasi.length },
-      { id: 'tindak_lanjut', label: '📌 Tindak Lanjut', count: MockData.tindakLanjut.length }
-    ], this.activeTab, 'EvaluasiPage.switchTab')}
       <div id="evaluasi-content">${this.renderContent()}</div>`;
   },
 
@@ -46,15 +41,24 @@ const EvaluasiPage = {
     }
   },
 
+  evalLingkupUnitId: 'unit-000',
+
   renderEvaluasi() {
-    // Get ALL units sorted by code for the table
-    const allUnits = MockData.units
-      .filter(u => u.level <= 2)
-      .sort((a, b) => a.code.localeCompare(b.code));
+    const lingkupId = this.evalLingkupUnitId || 'unit-000';
+
+    // Get units filtered by lingkup
+    let allUnits;
+    if (lingkupId === 'unit-000') {
+      allUnits = MockData.units.filter(u => u.level <= 2).sort((a, b) => a.code.localeCompare(b.code));
+    } else {
+      // Show selected unit + its children
+      allUnits = MockData.units.filter(u => u.id === lingkupId || u.parentId === lingkupId)
+        .sort((a, b) => a.code.localeCompare(b.code));
+    }
 
     // Build Unit Kerja Lingkup options
     const lingkupOptions = MockData.units.filter(u => u.level <= 1).sort((a, b) => a.code.localeCompare(b.code)).map(u =>
-      `<option value="${u.id}" ${u.id === 'unit-000' ? 'selected' : ''}>${u.code} - ${u.name}</option>`
+      `<option value="${u.id}" ${u.id === lingkupId ? 'selected' : ''}>${u.code} - ${u.name}</option>`
     ).join('');
 
     const thStyle = 'padding:10px 8px;font-weight:700;font-size:12px;border:1px solid #dee2e6;background:#f8f9fa;text-align:left;cursor:pointer';
@@ -65,7 +69,7 @@ const EvaluasiPage = {
         <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
           <div style="flex:1;min-width:300px">
             <label style="display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:4px">Unit Kerja Lingkup</label>
-            <select class="form-select" style="padding:5px 8px;font-size:13px;width:100%">
+            <select class="form-select" style="padding:5px 8px;font-size:13px;width:100%" onchange="EvaluasiPage.changeEvalLingkup(this.value)">
               ${lingkupOptions}
             </select>
           </div>
@@ -88,16 +92,16 @@ const EvaluasiPage = {
       <div style="border:1px solid #dee2e6;border-radius:4px;overflow-x:auto;background:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #eee">
           <div style="font-size:13px;color:#555">
-            <select style="padding:3px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;margin-right:4px">
+            <select style="padding:3px 6px;font-size:12px;border:1px solid #ccc;border-radius:3px;margin-right:4px" onchange="UI.paginateTable(this)">
               <option>25</option><option>50</option><option>100</option>
             </select>
             records per page
           </div>
           <div style="font-size:13px;color:#555">
-            Search: <input type="text" style="padding:3px 8px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:150px" />
+            Search: <input type="text" style="padding:3px 8px;font-size:12px;border:1px solid #ccc;border-radius:3px;width:150px" oninput="EvaluasiPage.filterEvalTable(this.value)" />
           </div>
         </div>
-        <table style="width:100%;border-collapse:collapse">
+        <table style="width:100%;border-collapse:collapse" id="eval-table">
           <thead>
             <tr>
               <th style="${thStyle};width:50px;text-align:center">NO ↕</th>
@@ -123,6 +127,19 @@ const EvaluasiPage = {
           Showing 1 to ${allUnits.length} of ${allUnits.length} entries
         </div>
       </div>`;
+  },
+
+  changeEvalLingkup(unitId) {
+    this.evalLingkupUnitId = unitId;
+    App.renderPage();
+  },
+
+  filterEvalTable(term) {
+    const rows = document.querySelectorAll('#eval-table tbody tr');
+    const search = (term || '').toLowerCase();
+    rows.forEach(row => {
+      row.style.display = !search || row.textContent.toLowerCase().includes(search) ? '' : 'none';
+    });
   },
 
   renderRekomendasi() {

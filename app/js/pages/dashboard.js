@@ -83,19 +83,24 @@ const DashboardPage = {
         <div class="card">
           <div class="card-header"><h3 class="card-title">🗓️ Status Verifikasi per Triwulan</h3></div>
           <div class="card-body">
-            ${UI.heatmap(
-      ['Sekretariat Jenderal', 'DJPT', 'DJPB', 'DJPDSPKP', 'DJPRL'],
-      ['TW I', 'TW II', 'TW III', 'TW IV'],
-      (unit, period) => {
-        if (period === 'TW I') {
-          if (unit.includes('Sekretariat')) return { status: 'approved', count: '✓' };
-          if (unit.includes('DJPT')) return { status: 'submitted', count: '⟳' };
-          if (unit.includes('DJPB')) return { status: 'draft', count: '…' };
+            ${(() => {
+        const unitNames = MockData.units.filter(u => u.level === 1).slice(0, 5).map(u => u.name.replace(/DIREKTORAT JENDERAL /i, 'DJ').replace(/SEKRETARIAT /i, 'Sek. ').substring(0, 25));
+        const quarters = ['TW I', 'TW II', 'TW III', 'TW IV'];
+        return UI.heatmap(unitNames, quarters, (unit, period) => {
+          const matchUnit = MockData.units.filter(u => u.level === 1).slice(0, 5).find(u => {
+            const shortName = u.name.replace(/DIREKTORAT JENDERAL /i, 'DJ').replace(/SEKRETARIAT /i, 'Sek. ').substring(0, 25);
+            return shortName === unit;
+          });
+          if (!matchUnit) return { status: 'none', count: '—' };
+          const lap = MockData.laporan.find(l => l.unitId === matchUnit.id && l.periodLabel && l.periodLabel.includes(period));
+          if (!lap) return { status: 'none', count: '—' };
+          if (lap.status === 'approved') return { status: 'approved', count: '✓' };
+          if (lap.status === 'submitted' || lap.status === 'under_review') return { status: 'submitted', count: '⟳' };
+          if (lap.status === 'draft') return { status: 'draft', count: '…' };
+          if (lap.status === 'rejected') return { status: 'rejected', count: '✗' };
           return { status: 'none', count: '—' };
-        }
-        return { status: 'none', count: '—' };
-      }
-    )}
+        });
+      })()}
             <div style="display:flex;gap:var(--space-md);margin-top:var(--space-md);font-size:0.75rem;flex-wrap:wrap">
               <span><span style="display:inline-block;width:12px;height:12px;background:var(--neutral-200);border-radius:3px"></span> Belum</span>
               <span><span style="display:inline-block;width:12px;height:12px;background:var(--neutral-400);border-radius:3px"></span> Draft</span>
@@ -115,27 +120,34 @@ const DashboardPage = {
         <div class="card">
           <div class="card-header"><h3 class="card-title">🍩 Komposisi Status Laporan</h3></div>
           <div class="card-body">
-            ${UI.donutChart([
-      { label: 'Approved', value: capaianList.filter(c => c.status === 'approved').length, color: 'var(--success-500)' },
-      { label: 'Verified', value: capaianList.filter(c => c.status === 'verified').length, color: 'var(--accent-500)' },
-      { label: 'Submitted', value: capaianList.filter(c => c.status === 'submitted').length, color: 'var(--primary-400)' },
-      { label: 'Draft', value: 1, color: 'var(--neutral-400)' },
-    ])}
+            ${(() => {
+        const laps = MockData.laporan;
+        const approved = laps.filter(l => l.status === 'approved').length;
+        const submitted = laps.filter(l => l.status === 'submitted' || l.status === 'under_review').length;
+        const rejected = laps.filter(l => l.status === 'rejected').length;
+        const draft = laps.filter(l => l.status === 'draft').length;
+        return UI.donutChart([
+          { label: 'Approved', value: approved || 0, color: 'var(--success-500)' },
+          { label: 'Submitted', value: submitted || 0, color: 'var(--primary-400)' },
+          { label: 'Rejected', value: rejected || 0, color: 'var(--danger-500, #e74c3c)' },
+          { label: 'Draft', value: draft || 0, color: 'var(--neutral-400)' },
+        ]);
+      })()}
           </div>
         </div>
         <div class="card">
           <div class="card-header"><h3 class="card-title">📉 Tren Capaian per Triwulan</h3></div>
           <div class="card-body">
             <div style="display:flex;align-items:end;gap:var(--space-md);height:180px;padding-top:var(--space-md)">
-              ${['TW IV \'25', 'TW I \'26'].map((q, i) => {
-      const vals = [92, 102][i];
-      return `<div style="flex:1;text-align:center">
-                  <div style="background:linear-gradient(to top,var(--primary-500),var(--primary-300));height:${vals * 1.5}px;border-radius:6px 6px 0 0;display:flex;align-items:end;justify-content:center;padding-bottom:4px">
-                    <span style="font-size:0.6875rem;font-weight:600;color:white">${vals}%</span>
+              ${['TW I'].map(q => {
+        const twCapaian = capaianList.length ? parseFloat((capaianList.reduce((s, c) => s + c.pct, 0) / capaianList.length).toFixed(1)) : 0;
+        return `<div style="flex:1;text-align:center">
+                  <div style="background:linear-gradient(to top,var(--primary-500),var(--primary-300));height:${Math.min(twCapaian * 1.5, 170)}px;border-radius:6px 6px 0 0;display:flex;align-items:end;justify-content:center;padding-bottom:4px">
+                    <span style="font-size:0.6875rem;font-weight:600;color:white">${twCapaian}%</span>
                   </div>
-                  <div style="font-size:0.75rem;color:var(--neutral-600);margin-top:6px">${q}</div>
+                  <div style="font-size:0.75rem;color:var(--neutral-600);margin-top:6px">${q} '26</div>
                 </div>`;
-    }).join('')}
+      }).join('')}
               ${['TW II', 'TW III', 'TW IV'].map(q => `
                 <div style="flex:1;text-align:center">
                   <div style="background:var(--neutral-200);height:40px;border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center">
@@ -157,16 +169,24 @@ const DashboardPage = {
         <div class="card">
           <div class="card-header"><h3 class="card-title">📝 Ringkasan Skor Evaluasi</h3></div>
           <div class="card-body">
-            ${UI.barChart([
-      { label: 'Perencanaan (maks 30)', value: 22.5, displayValue: '22.5', color: 'var(--primary-500)' },
-      { label: 'Pengukuran (maks 25)', value: 18.0, displayValue: '18.0', color: 'var(--accent-500)' },
-      { label: 'Pelaporan (maks 15)', value: 10.0, displayValue: '10.0', color: 'var(--success-500)' },
-      { label: 'Evaluasi Internal (maks 10)', value: 7.0, displayValue: '7.0', color: '#9b59b6' },
-      { label: 'Capaian (maks 20)', value: 15.0, displayValue: '15.0', color: '#e67e22' },
-    ], 30)}
-            <div style="text-align:right;margin-top:var(--space-md);font:600 1rem/1 var(--font-family)">
-              Total: <span style="color:var(--primary-600)">72.5</span> / 100
-            </div>
+            ${(() => {
+        // Dynamic scores based on actual data ratios
+        const sasaranScore = Math.min(30, totalSasaran > 0 ? parseFloat((totalSasaran / 10 * 30).toFixed(1)) : 0);
+        const pengukuranScore = Math.min(25, capaianList.length > 0 ? parseFloat((capaianList.length / totalIndikator * 25).toFixed(1)) : 0);
+        const laps = MockData.laporan;
+        const approvedLaps = laps.filter(l => l.status === 'approved').length;
+        const pelaporanScore = Math.min(15, laps.length > 0 ? parseFloat((approvedLaps / laps.length * 15).toFixed(1)) : 0);
+        const evalScore = Math.min(10, rekData.length > 0 ? parseFloat((rekData.length / 5 * 10).toFixed(1)) : 0);
+        const capaianScore = Math.min(20, parseFloat(avgCapaian) > 0 ? parseFloat((parseFloat(avgCapaian) / 100 * 20).toFixed(1)) : 0);
+        const totalScore = parseFloat((sasaranScore + pengukuranScore + pelaporanScore + evalScore + capaianScore).toFixed(1));
+        return UI.barChart([
+          { label: 'Perencanaan (maks 30)', value: sasaranScore, displayValue: sasaranScore.toString(), color: 'var(--primary-500)' },
+          { label: 'Pengukuran (maks 25)', value: pengukuranScore, displayValue: pengukuranScore.toString(), color: 'var(--accent-500)' },
+          { label: 'Pelaporan (maks 15)', value: pelaporanScore, displayValue: pelaporanScore.toString(), color: 'var(--success-500)' },
+          { label: 'Evaluasi Internal (maks 10)', value: evalScore, displayValue: evalScore.toString(), color: '#9b59b6' },
+          { label: 'Capaian (maks 20)', value: capaianScore, displayValue: capaianScore.toString(), color: '#e67e22' },
+        ], 30) + `<div style="text-align:right;margin-top:var(--space-md);font:600 1rem/1 var(--font-family)">Total: <span style="color:var(--primary-600)">${totalScore}</span> / 100</div>`;
+      })()}
           </div>
         </div>
         <div class="card">
@@ -191,13 +211,13 @@ const DashboardPage = {
                 </tr></thead>
                 <tbody>
                   ${[...new Set(rekData.map(r => r.unitKerja))].map(uk => {
-      const reks = rekData.filter(r => r.unitKerja === uk);
-      return `<tr>
+        const reks = rekData.filter(r => r.unitKerja === uk);
+        return `<tr>
                       <td style="padding:6px 8px;border-bottom:1px solid #eee">${uk.length > 35 ? uk.substring(0, 35) + '…' : uk}</td>
                       <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;font-weight:600">${reks.length}</td>
                       <td style="padding:6px 8px;border-bottom:1px solid #eee;text-align:center;font-weight:600">${reks.reduce((s, r) => s + r.jumlahTL, 0)}</td>
                     </tr>`;
-    }).join('')}
+      }).join('')}
                 </tbody>
               </table>
             </div>

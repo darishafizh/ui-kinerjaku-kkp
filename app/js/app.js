@@ -215,7 +215,7 @@ const App = {
         ${this.renderSidebar()}
         ${this.renderHeader()}
         ${this.renderTopbar(breadcrumbItems)}
-        <div class="main-content" onclick="if(App.mobileMenuOpen){App.mobileMenuOpen=false;App.renderPage();}">
+        <div class="main-content page-fade-in" onclick="if(App.mobileMenuOpen){App.mobileMenuOpen=false;App.renderPage();}">
           ${page.renderer()}
         </div>
       </div>
@@ -239,6 +239,7 @@ const App = {
             <div style="font-weight:500">${u.unitName}</div>
             <div style="opacity:0.7;font-size:0.6875rem">${u.role}</div>
           </div>
+
           <button class="header-notif" onclick="App.toggleNotif()" aria-label="Notifikasi">
             🔔
             ${unread > 0 ? `<span class="badge-count">${unread}</span>` : ''}

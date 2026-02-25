@@ -236,11 +236,11 @@ const PerencanaanPage = {
       </div>
 
       <!-- ── Table Daftar Sasaran ─────────────── -->
-      ${this._renderSasaranTable(sasaranList, isAdmin)}
+      ${this._renderSasaranTable(sasaranList, isAdmin, isEditor)}
     `;
   },
 
-  _renderSasaranTable(sasaranList, isAdmin) {
+  _renderSasaranTable(sasaranList, isAdmin, isEditor) {
     if (!sasaranList.length) {
       return `
         <div class="card">

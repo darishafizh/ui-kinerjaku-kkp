@@ -2086,3 +2086,184 @@ tbody tr:last-child td {
     padding: var(--space-md);
   }
 }
+
+/* ═══════════════════════════════════
+   Page Fade-in Animation
+   ═══════════════════════════════════ */
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-fade-in {
+  animation: pageFadeIn 0.3s ease-out;
+}
+
+/* ═══════════════════════════════════
+   Dark Mode
+   ═══════════════════════════════════ */
+.dark-mode {
+  --dm-bg: #1a1a2e;
+  --dm-surface: #16213e;
+  --dm-card: #1e293b;
+  --dm-border: #334155;
+  --dm-text: #e2e8f0;
+  --dm-text-muted: #94a3b8;
+  --dm-header: #0f172a;
+}
+
+.dark-mode .main-content {
+  background: var(--dm-bg);
+  color: var(--dm-text);
+}
+
+.dark-mode .header {
+  background: var(--dm-header);
+  border-bottom-color: var(--dm-border);
+}
+
+.dark-mode .header-unit-info div {
+  color: var(--dm-text);
+}
+
+.dark-mode .topbar {
+  background: var(--dm-surface);
+  border-bottom-color: var(--dm-border);
+}
+
+.dark-mode .topbar-breadcrumb span {
+  color: var(--dm-text-muted);
+}
+
+.dark-mode .sidebar {
+  background: var(--dm-header);
+}
+
+.dark-mode .card,
+.dark-mode .summary-card {
+  background: var(--dm-card);
+  border-color: var(--dm-border);
+  color: var(--dm-text);
+}
+
+.dark-mode .card-header {
+  border-bottom-color: var(--dm-border);
+}
+
+.dark-mode .card-title {
+  color: var(--dm-text);
+}
+
+.dark-mode .page-header,
+.dark-mode .page-title {
+  color: var(--dm-text);
+}
+
+.dark-mode .text-muted {
+  color: var(--dm-text-muted) !important;
+}
+
+.dark-mode table {
+  color: var(--dm-text);
+}
+
+.dark-mode table thead th {
+  background: var(--dm-surface) !important;
+  border-color: var(--dm-border) !important;
+  color: var(--dm-text) !important;
+}
+
+.dark-mode table tbody td {
+  border-color: var(--dm-border) !important;
+}
+
+.dark-mode table tbody tr {
+  border-color: var(--dm-border);
+}
+
+.dark-mode table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dark-mode .toolbar {
+  background: var(--dm-card);
+  border-color: var(--dm-border);
+}
+
+.dark-mode .search-bar input {
+  background: var(--dm-surface);
+  border-color: var(--dm-border);
+  color: var(--dm-text);
+}
+
+.dark-mode .form-select,
+.dark-mode .form-input {
+  background: var(--dm-surface) !important;
+  border-color: var(--dm-border) !important;
+  color: var(--dm-text) !important;
+}
+
+.dark-mode .modal-body {
+  background: var(--dm-card);
+  color: var(--dm-text);
+}
+
+.dark-mode .modal-header {
+  background: var(--dm-surface);
+  border-bottom-color: var(--dm-border);
+  color: var(--dm-text);
+}
+
+.dark-mode .modal-footer {
+  background: var(--dm-surface);
+  border-top-color: var(--dm-border);
+}
+
+.dark-mode .table-container {
+  background: var(--dm-card);
+}
+
+.dark-mode .empty-state-title,
+.dark-mode .empty-state-text {
+  color: var(--dm-text-muted);
+}
+
+.dark-mode .tabs {
+  border-bottom-color: var(--dm-border);
+}
+
+.dark-mode .tab-item {
+  color: var(--dm-text-muted);
+}
+
+.dark-mode .tab-item.active {
+  color: var(--primary-300);
+  border-bottom-color: var(--primary-300);
+}
+
+.dark-mode .notif-panel {
+  background: var(--dm-card);
+  border-color: var(--dm-border);
+}
+
+.dark-mode .notif-item {
+  border-bottom-color: var(--dm-border);
+  color: var(--dm-text);
+}
+
+.dark-mode div[style*="background:#fff"],
+.dark-mode div[style*="background: #fff"] {
+  background: var(--dm-card) !important;
+}
+
+.dark-mode div[style*="background:#f8f9fa"],
+.dark-mode div[style*="background:#fafafa"] {
+  background: var(--dm-surface) !important;
+}

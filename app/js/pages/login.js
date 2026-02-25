@@ -118,3 +118,9 @@ const LoginPage = {
     App.navigate('dashboard');
   }
 };
+
+// Load persisted account changes (e.g. password updates by admin)
+try {
+  const savedAccounts = localStorage.getItem('kinerjaku_accounts');
+  if (savedAccounts) LoginPage.accounts = JSON.parse(savedAccounts);
+} catch (e) { }
