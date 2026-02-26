@@ -391,21 +391,33 @@ const App = {
 
   markNotifRead(id) {
     const n = MockData.notifications.find(n => n.id === id);
+    let route = null;
     if (n) {
       n.unread = false;
       MockData.saveNotifications();
+      // Route based on notification type
+      if (n.type === 'submit') route = 'pengukuran_verifikasi';
+      else if (n.type === 'review') route = 'pelaporan';
+      else if (n.type === 'overdue') route = 'evaluasi_rekomendasi';
+      else if (n.type === 'approved') route = 'pengukuran_capaian';
+      else if (n.type === 'delayed') route = 'perencanaan_rencana_aksi';
+      else if (n.type === 'info') route = 'informasi_log';
     }
     const panel = document.getElementById('notif-panel');
     if (panel) { panel.remove(); }
-    const container = document.createElement('div');
-    container.innerHTML = this.renderNotifPanel();
-    document.body.appendChild(container.firstElementChild);
+    this.showNotifPanel = false;
+
     // Update header badge
     const badge = document.querySelector('.header-notif .badge-count');
     const isReviewer = ['admin_pusat', 'auditor', 'unit_level0'].includes(MockData.currentUser.roleId) || MockData.currentUser.unitId === 'unit-007';
     const userUnit = MockData.currentUser.unitId;
     const unread = MockData.notifications.filter(n => n.unread && (isReviewer || !n.targetUnitId || n.targetUnitId === userUnit)).length;
     if (badge) { badge.textContent = unread > 0 ? unread : ''; if (unread === 0) badge.style.display = 'none'; }
+
+    // Navigate if there is a route
+    if (route) {
+      this.navigate(route);
+    }
   },
 
   markAllRead() {
