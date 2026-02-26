@@ -141,7 +141,7 @@ const PengukuranPage = {
 
     const thStyle = 'text-align:center;padding:8px 4px;font-weight:700;font-size:12px;border:1px solid #dee2e6;background:#f8f9fa';
     const tdStyle = 'text-align:center;padding:10px 4px;border:1px solid #eee';
-    const plusBtn = `<button style="font-size:15px;background:transparent;border:none;color:var(--primary-600);cursor:pointer;font-weight:700;padding:0" title="Tambah capaian">＋</button>`;
+    const plusBtn = App.isReadOnlyRole() ? `<span style="color:var(--neutral-400)">-</span>` : `<button style="font-size:15px;background:transparent;border:none;color:var(--primary-600);cursor:pointer;font-weight:700;padding:0" title="Tambah capaian">＋</button>`;
 
     return `
       ${this.buildFilterPanel()}
@@ -306,8 +306,9 @@ const PengukuranPage = {
         </div>
         <div class="card-footer" style="display:flex;justify-content:flex-end;gap:var(--space-sm)">
           <button class="btn btn-ghost" onclick="PengukuranPage.closeInputForm()">Batal</button>
+          ${App.isReadOnlyRole() ? '' : `
           <button class="btn btn-secondary" onclick="PengukuranPage.closeInputForm()">💾 Simpan Draft</button>
-          <button class="btn btn-primary" onclick="PengukuranPage.closeInputForm()">📤 Submit untuk Verifikasi</button>
+          <button class="btn btn-primary" onclick="PengukuranPage.closeInputForm()">📤 Submit untuk Verifikasi</button>`}
         </div>
       </div>`;
   },
@@ -535,11 +536,11 @@ const PengukuranPage = {
     const isVerified = cap.status === 'verified';
     const footer = `
       <button class="btn btn-ghost" onclick="App.closeModal()">Tutup</button>
-      ${isSubmitted ? `
+      ${isSubmitted && !App.isReadOnlyRole() ? `
         <button class="btn btn-danger" onclick="App.closeModal()">✗ Tolak</button>
         <button class="btn btn-success" onclick="App.closeModal()">✅ Verifikasi</button>
       ` : ''}
-      ${isVerified ? `
+      ${isVerified && !App.isReadOnlyRole() ? `
         <button class="btn btn-danger" onclick="App.closeModal()">✗ Reject</button>
         <button class="btn btn-success" onclick="App.closeModal()">✅ Approve</button>
       ` : ''}`;

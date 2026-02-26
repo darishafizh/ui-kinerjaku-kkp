@@ -25,6 +25,33 @@ const UI = {
     return `<span class="badge badge-dot ${cls}">${label}</span>`;
   },
 
+  // --- Toast Notification ---
+  toast(type, message, duration = 3000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const icon = icons[type] || '🔔';
+
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `
+      <div class="toast-icon">${icon}</div>
+      <div class="toast-content"><p class="toast-message">${message}</p></div>
+    `;
+
+    container.appendChild(el);
+
+    // Animate in
+    setTimeout(() => el.classList.add('show'), 10);
+
+    // Animate out
+    setTimeout(() => {
+      el.classList.replace('show', 'hiding');
+      setTimeout(() => el.remove(), 300);
+    }, duration);
+  },
+
   // --- Summary Card ---
   summaryCard(icon, value, label, color, trend) {
     const trendHtml = trend
@@ -68,13 +95,16 @@ const UI = {
   },
 
   // --- Empty State ---
-  emptyState(text, icon = '📭', btnText, btnAction) {
+  emptyState(text, icon = 'svg', btnText, btnAction) {
+    const defaultSvg = `<svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--neutral-300)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>`;
+    const graphic = icon === 'svg' ? defaultSvg : icon;
+
     const btn = btnText ? `<button class="btn btn-primary" onclick="${btnAction}">${btnText}</button>` : '';
     return `
       <div class="empty-state">
-        <div class="empty-state-icon">${icon}</div>
-        <div class="empty-state-title">Tidak Ada Data</div>
-        <div class="empty-state-text">${text}</div>
+        <div class="empty-state-graphic" style="margin-bottom:12px">${graphic}</div>
+        <div class="empty-state-title" style="font-size:1.125rem;font-weight:600;color:var(--neutral-800);margin-bottom:4px">Belum Ada Data</div>
+        <div class="empty-state-text" style="color:var(--neutral-500);margin-bottom:16px">${text}</div>
         ${btn}
       </div>`;
   },

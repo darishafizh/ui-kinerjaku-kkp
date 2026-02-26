@@ -148,6 +148,11 @@ const App = {
     return null;
   },
 
+  isReadOnlyRole() {
+    const role = MockData.currentUser?.roleId;
+    return ['auditor', 'tamu'].includes(role);
+  },
+
   isParentActive(parentId) {
     return this.currentPage.startsWith(parentId + '_') || this.currentPage === parentId;
   },
@@ -215,7 +220,7 @@ const App = {
         ${this.renderSidebar()}
         ${this.renderHeader()}
         ${this.renderTopbar(breadcrumbItems)}
-        <div class="main-content page-fade-in" onclick="if(App.mobileMenuOpen){App.mobileMenuOpen=false;App.renderPage();}">
+        <div class="main-content page-fade-in is-loading" id="main-content" onclick="if(App.mobileMenuOpen){App.mobileMenuOpen=false;App.renderPage();}">
           ${page.renderer()}
         </div>
       </div>
@@ -223,6 +228,12 @@ const App = {
       ${this.showNotifPanel ? this.renderNotifPanel() : ''}
       ${this.mobileMenuOpen ? '<div class="sidebar-overlay" onclick="App.toggleMobileMenu()"></div>' : ''}
     `;
+
+    // Remove loading class after a brief moment to create a transition skeleton effect
+    setTimeout(() => {
+      const mc = document.getElementById('main-content');
+      if (mc) mc.classList.remove('is-loading');
+    }, 400);
   },
 
   /* ── Header ────────────────────────────────── */

@@ -168,7 +168,7 @@ const InformasiPage = {
   confirmDeleteUnit(unitId) {
     const u = MockData.getUnit(unitId);
     if (!u) return;
-    if (u.level === 0) { alert('Unit kerja level 0 tidak dapat dihapus!'); return; }
+    if (u.level === 0) { UI.toast('error', 'Unit kerja level 0 tidak dapat dihapus!'); return; }
     const content = `
       <div style="text-align:center;padding:20px 0">
         <div style="font-size:3rem;margin-bottom:12px">⚠️</div>
@@ -451,7 +451,7 @@ const InformasiPage = {
     const newTipe = document.getElementById('edit-tipe')?.value;
     if (!newUsername) { const el = document.getElementById('edit-username'); el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; return; }
     if (!newPass) { const el = document.getElementById('edit-password'); el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; return; }
-    if (newUsername !== originalUsername && LoginPage.accounts.find(a => a.username === newUsername)) { alert('Username sudah digunakan!'); return; }
+    if (newUsername !== originalUsername && LoginPage.accounts.find(a => a.username === newUsername)) { UI.toast('error', 'Username sudah digunakan!'); return; }
     const account = LoginPage.accounts.find(a => a.username === originalUsername);
     if (account) {
       account.username = newUsername;
@@ -526,7 +526,7 @@ const InformasiPage = {
     const unitName = document.getElementById('new-unit')?.value?.trim() || '';
     if (!username) { const el = document.getElementById('new-username'); el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; return; }
     if (!password) { const el = document.getElementById('new-password'); el.style.border = '2px solid #e74c3c'; el.focus(); el.onfocus = () => el.style.border = ''; return; }
-    if (LoginPage.accounts.find(a => a.username === username)) { alert('Username sudah digunakan!'); return; }
+    if (LoginPage.accounts.find(a => a.username === username)) { UI.toast('error', 'Username sudah digunakan!'); return; }
     const tipeMap = { 'Admin': 'admin_pusat', 'Operator Level 0': 'unit_level0', 'Operator Level I': 'unit_level1', 'Operator Level II': 'unit_level2', 'Operator Level III': 'unit_level3', 'Auditor': 'auditor', 'Viewer': 'tamu' };
     const roleId = tipeMap[tipe] || 'tamu';
     const newAccount = { username, password, unitId, unitName, roleId, role: tipe, fullName: unitName, avatar: username.substring(0, 2).toUpperCase(), nip: '-', email: username + '@kkp.go.id' };
@@ -539,7 +539,7 @@ const InformasiPage = {
   },
 
   confirmDeleteUser(username) {
-    if (username === 'admin') { alert('Akun admin tidak dapat dihapus!'); return; }
+    if (username === 'admin') { UI.toast('error', 'Akun admin tidak dapat dihapus!'); return; }
     const content = `
       <div style="text-align:center;padding:20px 0">
         <div style="font-size:3rem;margin-bottom:12px">⚠️</div>

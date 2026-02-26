@@ -876,7 +876,7 @@ const PerencanaanPage = {
     const baseline = parseFloat(document.querySelector('[name=baseline]')?.value) || 0;
     const sumber = document.querySelector('[name=sumber]')?.value?.trim();
     const targetTahunan = parseFloat(document.querySelector('[name=target_tahunan]')?.value) || 0;
-    if (!nama || !satuan) { alert('Nama Indikator dan Satuan wajib diisi!'); return; }
+    if (!nama || !satuan) { UI.toast('error', 'Nama Indikator dan Satuan wajib diisi!'); return; }
 
     const id = 'ik-' + Date.now();
     const code = 'IK.' + (MockData.indikator.length + 1);
