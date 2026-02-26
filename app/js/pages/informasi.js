@@ -625,13 +625,19 @@ const InformasiPage = {
         </div>
       </div>`;
   },
-
   // ── Activity Log (Audit Trail) ─────────────
   renderLog() {
-    const logs = MockData.activityLog || [];
+    const isReviewer = ['admin_pusat', 'auditor', 'unit_level0'].includes(MockData.currentUser.roleId) || MockData.currentUser.unitId === 'unit-007';
+    const userUnit = MockData.currentUser.unitId;
+
+    // Filter logs: Show if reviewer, or if it targets this user's unit, or if it's a system-wide log (no unitId)
+    const logs = (MockData.activityLog || []).filter(l =>
+      isReviewer || !l.unitId || l.unitId === userUnit
+    );
+
     const actionIcons = { login: '🔑', edit: '✏️', create: '➕', submit: '📨', approve: '✅', reject: '❌', review: '📋', view: '👁️', export: '📥', upload: '📤', delete: '🗑️' };
     const actionLabels = { login: 'Login', edit: 'Edit', create: 'Create', submit: 'Submit', approve: 'Approve', reject: 'Reject', review: 'Review', view: 'View', export: 'Export', upload: 'Upload', delete: 'Delete' };
-    const actionColors = { login: '#64748b', edit: '#f59e0b', create: '#22c55e', submit: '#3b82f6', approve: '#15803d', reject: '#dc2626', review: '#8b5cf6', view: '#6b7280', export: '#0ea5e9', upload: '#0d9488', delete: '#ef4444' };
+    const actionColors = { login: '#64748b', edit: '#f59e0b', create: 'Create', submit: '#3b82f6', approve: '#15803d', reject: '#dc2626', review: '#8b5cf6', view: '#6b7280', export: '#0ea5e9', upload: '#0d9488', delete: '#ef4444' };
 
     // Stats
     const totalActions = logs.length;

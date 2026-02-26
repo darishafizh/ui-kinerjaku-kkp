@@ -2267,3 +2267,108 @@ tbody tr:last-child td {
 .dark-mode div[style*="background:#fafafa"] {
   background: var(--dm-surface) !important;
 }
+
+/* --- Global UI Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Page content entry animation */
+.main-content > * {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.main-content > *:nth-child(2) { animation-delay: 0.05s; }
+.main-content > *:nth-child(3) { animation-delay: 0.1s; }
+.main-content > *:nth-child(4) { animation-delay: 0.15s; }
+.main-content > *:nth-child(5) { animation-delay: 0.2s; }
+
+/* Table and row hover animations */
+table tbody tr {
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+table tbody tr:hover {
+  transform: translateY(-1px) scale(1.002);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  z-index: 1;
+  position: relative;
+}
+
+/* Modal animations */
+.modal-overlay {
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Button hover feedback */
+.btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+/* Card hover scaling */
+.card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+/* Form input focus animations */
+.form-input, .form-select, .form-textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  transform: translateY(-1px);
+}
+
+/* Notification panel entrance */
+.notif-panel {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Badge pulse */
+.badge {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.badge:hover {
+  transform: scale(1.05);
+}
+

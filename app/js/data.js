@@ -601,11 +601,11 @@ const MockData = {
 
   // --- Notifikasi ---
   notifications: [
-    { id: 'notif-001', title: 'Capaian diajukan oleh Siti Nurhaliza', message: 'Indikator "Volume Produksi Perikanan Tangkap" TW I telah disubmit.', time: '5 menit lalu', unread: true, type: 'submit' },
-    { id: 'notif-002', title: 'Laporan menunggu reviu', message: 'Ditjen Perikanan Budidaya mengajukan laporan TW I 2026.', time: '1 jam lalu', unread: true, type: 'review' },
-    { id: 'notif-003', title: 'Tindak lanjut overdue', message: 'Revisi definisi indikator DJPB telah melewati batas waktu.', time: '3 jam lalu', unread: true, type: 'overdue' },
-    { id: 'notif-004', title: 'Capaian disetujui', message: 'Indikator "NTN" TW I telah disetujui oleh Reviewer.', time: '1 hari lalu', unread: false, type: 'approved' },
-    { id: 'notif-005', title: 'Rencana aksi terlambat', message: 'Sosialisasi Perizinan Online ke 34 Provinsi melewati target selesai.', time: '2 hari lalu', unread: false, type: 'delayed' },
+    { id: 'notif-001', title: 'Capaian diajukan oleh Siti Nurhaliza', message: 'Indikator "Volume Produksi Perikanan Tangkap" TW I telah disubmit.', createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(), unread: true, type: 'submit' },
+    { id: 'notif-002', title: 'Laporan menunggu reviu', message: 'Ditjen Perikanan Budidaya mengajukan laporan TW I 2026.', createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), unread: true, type: 'review' },
+    { id: 'notif-003', title: 'Tindak lanjut overdue', message: 'Revisi definisi indikator DJPB telah melewati batas waktu.', createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), unread: true, type: 'overdue' },
+    { id: 'notif-004', title: 'Capaian disetujui', message: 'Indikator "NTN" TW I telah disetujui oleh Reviewer.', createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), unread: false, type: 'approved' },
+    { id: 'notif-005', title: 'Rencana aksi terlambat', message: 'Sosialisasi Perizinan Online ke 34 Provinsi melewati target selesai.', createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), unread: false, type: 'delayed' },
   ],
 
   // --- Komentar Laporan (Discussion Thread) ---
@@ -659,12 +659,34 @@ const MockData = {
     return this.indikator.filter(i => i.sasaranId === sasaranId);
   },
 
+  // --- Relative Time Helper ---
+  timeAgo(isoString) {
+    if (!isoString) return '-';
+    const now = Date.now();
+    const then = new Date(isoString).getTime();
+    const diffMs = now - then;
+    if (diffMs < 0) return 'Baru saja';
+    const seconds = Math.floor(diffMs / 1000);
+    if (seconds < 60) return 'Baru saja';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + ' menit lalu';
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + ' jam lalu';
+    const days = Math.floor(hours / 24);
+    if (days < 7) return days + ' hari lalu';
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return weeks + ' minggu lalu';
+    const months = Math.floor(days / 30);
+    if (months < 12) return months + ' bulan lalu';
+    return Math.floor(days / 365) + ' tahun lalu';
+  },
+
   // --- Notification Helper ---
-  pushNotification(type, title, message) {
+  pushNotification(type, title, message, targetUnitId = null) {
     const id = 'notif-' + Date.now();
     this.notifications.unshift({
-      id, type, title, message,
-      time: 'Baru saja',
+      id, type, title, message, targetUnitId,
+      createdAt: new Date().toISOString(),
       unread: true
     });
     // Keep max 20
@@ -673,7 +695,7 @@ const MockData = {
   },
 
   // --- Activity Log Helper ---
-  pushActivityLog(action, module, detail) {
+  pushActivityLog(action, module, detail, unitId = null) {
     const u = this.currentUser || {};
     const now = new Date();
     const ts = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
@@ -683,7 +705,7 @@ const MockData = {
       timestamp: ts,
       user: u.fullName || u.username || 'System',
       role: u.role || '-',
-      action, module, detail, ip
+      action, module, detail, ip, unitId
     });
     if (this.activityLog.length > 50) this.activityLog = this.activityLog.slice(0, 50);
     this.saveActivityLog();
@@ -717,7 +739,17 @@ const MockData = {
       const lap = localStorage.getItem('kinerjaku_laporan');
       if (lap) this.laporan = JSON.parse(lap);
       const notif = localStorage.getItem('kinerjaku_notif');
-      if (notif) this.notifications = JSON.parse(notif);
+      if (notif) {
+        this.notifications = JSON.parse(notif);
+        let migrated = false;
+        this.notifications.forEach(n => {
+          if (!n.createdAt) {
+            n.createdAt = new Date().toISOString();
+            migrated = true;
+          }
+        });
+        if (migrated) this.saveNotifications();
+      }
       const cmt = localStorage.getItem('kinerjaku_comments');
       if (cmt) this.laporanComments = JSON.parse(cmt);
       const ik = localStorage.getItem('kinerjaku_indikator');

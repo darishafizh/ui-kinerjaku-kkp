@@ -189,13 +189,14 @@ const PelaporanPage = {
       lap.version = (lap.version || 1) + 1;
     }
 
-    // Push notification
+    // Push notification (targeted to the unit that owns the report)
     MockData.pushNotification(
       decision === 'approved' ? 'approved' : 'review',
       decision === 'approved' ? 'Laporan disetujui' : 'Laporan ditolak',
-      `Laporan ${lap.unitName} — ${lap.periodLabel} telah ${decision === 'approved' ? 'disetujui' : 'ditolak'} oleh ${reviewer}.`
+      `Laporan ${lap.unitName} — ${lap.periodLabel} telah ${decision === 'approved' ? 'disetujui' : 'ditolak'} oleh ${reviewer}.`,
+      lap.unitId
     );
-    MockData.pushActivityLog(decision === 'approved' ? 'approve' : 'reject', 'Pelaporan', `${decision === 'approved' ? 'Menyetujui' : 'Menolak'} Laporan Kinerja ${lap.periodLabel} — ${lap.unitName}`);
+    MockData.pushActivityLog(decision === 'approved' ? 'approve' : 'reject', 'Pelaporan', `${decision === 'approved' ? 'Menyetujui' : 'Menolak'} Laporan Kinerja ${lap.periodLabel} — ${lap.unitName}`, lap.unitId);
 
     // Add timeline entry
     if (!MockData._pelaporanTimeline) {
@@ -376,6 +377,15 @@ const PelaporanPage = {
     };
     MockData.laporan.push(newLap);
     MockData.saveLaporan();
+
+    if (submit) {
+      MockData.pushNotification('submit', 'Laporan disubmit', `Laporan ${newLap.unitName} — ${newLap.periodLabel} telah disubmit untuk reviu.`, newLap.unitId);
+      MockData.pushActivityLog('submit', 'Pelaporan', `Mensubmit Laporan Kinerja ${newLap.periodLabel} — ${newLap.unitName}`, newLap.unitId);
+    } else {
+      MockData.pushNotification('info', 'Draft laporan dibuat', `Draft Laporan ${newLap.unitName} — ${newLap.periodLabel} telah dibuat.`, newLap.unitId);
+      MockData.pushActivityLog('create', 'Pelaporan', `Membuat draft Laporan Kinerja ${newLap.periodLabel} — ${newLap.unitName}`, newLap.unitId);
+    }
+
     App.closeModal();
     App.renderPage();
   },
@@ -442,8 +452,8 @@ const PelaporanPage = {
     lap.status = 'submitted';
     lap.updatedAt = new Date().toISOString().split('T')[0];
     MockData.saveLaporan();
-    MockData.pushNotification('submit', 'Laporan disubmit', `Laporan ${lap.unitName} — ${lap.periodLabel} telah disubmit untuk reviu.`);
-    MockData.pushActivityLog('submit', 'Pelaporan', `Mensubmit Laporan Kinerja ${lap.periodLabel} — ${lap.unitName}`);
+    MockData.pushNotification('submit', 'Laporan disubmit', `Laporan ${lap.unitName} — ${lap.periodLabel} telah disubmit untuk reviu.`, lap.unitId);
+    MockData.pushActivityLog('submit', 'Pelaporan', `Mensubmit Laporan Kinerja ${lap.periodLabel} — ${lap.unitName}`, lap.unitId);
     const el = document.getElementById('modal-container');
     el.innerHTML = UI.modal('Laporan Disubmit', `
       <div style="text-align:center;padding:var(--space-xl)">

@@ -10,7 +10,7 @@ const App = {
   expandedMenus: {},       // track which parent menus are expanded
   showNotifPanel: false,
   mobileMenuOpen: false,
-  sidebarCollapsed: false,
+  sidebarCollapsed: true,
   activeUnitFilter: 'all',
 
   /* ── Menu Structure ─────────────────────────── */
@@ -228,7 +228,8 @@ const App = {
   /* ── Header ────────────────────────────────── */
   renderHeader() {
     const u = MockData.currentUser;
-    const unread = MockData.notifications.filter(n => n.unread).length;
+    const isReviewer = ['admin_pusat', 'auditor', 'unit_level0'].includes(u.roleId) || u.unitId === 'unit-007';
+    const unread = MockData.notifications.filter(n => n.unread && (isReviewer || !n.targetUnitId || n.targetUnitId === u.unitId)).length;
     return `
       <header class="header">
         <div class="header-left">
@@ -352,7 +353,13 @@ const App = {
 
   /* ── Notifications ─────────────────────────── */
   renderNotifPanel() {
-    const notifications = MockData.notifications;
+    const isReviewer = ['admin_pusat', 'auditor', 'unit_level0'].includes(MockData.currentUser.roleId) || MockData.currentUser.unitId === 'unit-007';
+    const userUnit = MockData.currentUser.unitId;
+
+    // Filter notifications: Show if reviewer, or if it targets this user's unit, or if it's a system-wide notification (no targetUnitId)
+    const notifications = MockData.notifications.filter(n =>
+      isReviewer || !n.targetUnitId || n.targetUnitId === userUnit
+    );
     const unread = notifications.filter(n => n.unread).length;
     const typeIcons = { submit: '📨', review: '📋', overdue: '⚠️', approved: '✅', delayed: '🕐', info: 'ℹ️' };
     const items = notifications.map(n => `
@@ -362,7 +369,7 @@ const App = {
           <div style="flex:1;min-width:0">
             <div class="notif-item-title">${n.title}</div>
             <div style="font-size:0.8125rem;color:var(--neutral-600);margin:4px 0">${n.message}</div>
-            <div class="notif-item-time">${n.time}</div>
+            <div class="notif-item-time">${n.createdAt ? MockData.timeAgo(n.createdAt) : (n.time || '-')}</div>
           </div>
           ${n.unread ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--primary-500);flex-shrink:0;margin-top:6px"></span>' : ''}
         </div>
@@ -384,7 +391,10 @@ const App = {
 
   markNotifRead(id) {
     const n = MockData.notifications.find(n => n.id === id);
-    if (n) { n.unread = false; }
+    if (n) {
+      n.unread = false;
+      MockData.saveNotifications();
+    }
     const panel = document.getElementById('notif-panel');
     if (panel) { panel.remove(); }
     const container = document.createElement('div');
@@ -392,12 +402,15 @@ const App = {
     document.body.appendChild(container.firstElementChild);
     // Update header badge
     const badge = document.querySelector('.header-notif .badge-count');
-    const unread = MockData.notifications.filter(n => n.unread).length;
+    const isReviewer = ['admin_pusat', 'auditor', 'unit_level0'].includes(MockData.currentUser.roleId) || MockData.currentUser.unitId === 'unit-007';
+    const userUnit = MockData.currentUser.unitId;
+    const unread = MockData.notifications.filter(n => n.unread && (isReviewer || !n.targetUnitId || n.targetUnitId === userUnit)).length;
     if (badge) { badge.textContent = unread > 0 ? unread : ''; if (unread === 0) badge.style.display = 'none'; }
   },
 
   markAllRead() {
     MockData.notifications.forEach(n => n.unread = false);
+    MockData.saveNotifications();
     const panel = document.getElementById('notif-panel');
     if (panel) { panel.remove(); }
     const container = document.createElement('div');
