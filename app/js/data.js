@@ -681,6 +681,14 @@ const MockData = {
     return Math.floor(days / 365) + ' tahun lalu';
   },
 
+  formatDateTime(isoString) {
+    if (!isoString) return '-';
+    const d = new Date(isoString);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+    const pad = n => String(n).padStart(2, '0');
+    return `${pad(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  },
+
   // --- Notification Helper ---
   pushNotification(type, title, message, targetUnitId = null) {
     const id = 'notif-' + Date.now();

@@ -369,7 +369,9 @@ const App = {
           <div style="flex:1;min-width:0">
             <div class="notif-item-title">${n.title}</div>
             <div style="font-size:0.8125rem;color:var(--neutral-600);margin:4px 0">${n.message}</div>
-            <div class="notif-item-time">${n.createdAt ? MockData.timeAgo(n.createdAt) : (n.time || '-')}</div>
+            <div class="notif-item-time" style="font-size:0.75rem;color:var(--neutral-500)">
+              ${n.createdAt ? `${MockData.formatDateTime(n.createdAt)} • ${MockData.timeAgo(n.createdAt)}` : (n.time || '-')}
+            </div>
           </div>
           ${n.unread ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--primary-500);flex-shrink:0;margin-top:6px"></span>' : ''}
         </div>
