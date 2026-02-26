@@ -264,8 +264,30 @@ const DashboardPage = {
           <div style="font-size:12px;color:#718096;margin-top:4px">Unit Eselon II</div>
         </div>
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:#9b59b6">${MockData.units.filter(u => u.level === 3).length}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Unit Eselon III</div>
+          <div style="font-size:2rem;font-weight:800;color:#9b59b6">${typeof LoginPage !== 'undefined' ? LoginPage.accounts.length : 0}</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px">Total Pengguna</div>
+        </div>
+      </div>
+
+      <!-- Aktivitas Terkini -->
+      <div class="card" style="margin-bottom:8px">
+        <div class="card-header"><h3 class="card-title">📋 Aktivitas Terkini</h3></div>
+        <div class="card-body">
+          ${(() => {
+        const logs = (MockData.activityLog || []).slice(-8).reverse();
+        if (!logs.length) return '<div style="text-align:center;color:#a0aec0;padding:20px">Belum ada aktivitas</div>';
+        return logs.map(l => {
+          const icons = { create: '➕', edit: '✏️', delete: '🗑️', login: '🔑', export: '📥', upload: '📤' };
+          const icon = icons[l.action] || '📌';
+          return `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+          <span style="font-size:1.1rem">${icon}</span>
+          <div style="flex:1">
+            <div style="font-size:13px;color:#2d3748">${l.detail}</div>
+            <div style="font-size:11px;color:#a0aec0;margin-top:2px">${l.module} · ${l.time || '-'}</div>
+          </div>
+        </div>`;
+        }).join('');
+      })()}
         </div>
       </div>
 
