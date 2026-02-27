@@ -175,18 +175,53 @@ const App = {
     localStorage.setItem('kinerjaku_page', pageId);
     this.showNotifPanel = false;
     this.mobileMenuOpen = false;
-    // Auto-expand the parent menu if navigating to a submenu
     const parentId = this.getParentId(pageId);
     if (parentId) {
       this.expandedMenus[parentId] = true;
     }
+    // Show progress bar
+    this.showProgressBar();
     this.renderPage();
     window.scrollTo(0, 0);
   },
 
+  showProgressBar() {
+    let bar = document.getElementById('page-progress-bar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'page-progress-bar';
+      bar.className = 'page-progress-bar';
+      document.body.appendChild(bar);
+    }
+    bar.classList.remove('done');
+    bar.style.width = '0%';
+    void bar.offsetWidth; // force reflow
+    bar.style.width = '70%';
+    setTimeout(function () {
+      bar.style.width = '100%';
+      setTimeout(function () {
+        bar.classList.add('done');
+      }, 200);
+    }, 150);
+  },
+
   toggleMenu(menuId) {
     this.expandedMenus[menuId] = !this.expandedMenus[menuId];
-    this.renderPage();
+    // Re-render only the sidebar, not the entire page
+    const sidebarEl = document.querySelector('.sidebar');
+    if (sidebarEl) {
+      const wasPeek = sidebarEl.classList.contains('sidebar-peek');
+      sidebarEl.outerHTML = this.renderSidebar();
+      // Restore peek state if it was active
+      if (wasPeek) {
+        const newSidebar = document.querySelector('.sidebar');
+        if (newSidebar) newSidebar.classList.add('sidebar-peek');
+      }
+      // Re-setup hover listeners since DOM changed
+      this.setupSidebarHover();
+    } else {
+      this.renderPage();
+    }
   },
 
   toggleMobileMenu() {
@@ -217,6 +252,7 @@ const App = {
 
     app.innerHTML = `
       <div class="app-layout ${this.mobileMenuOpen ? 'mobile-menu-open' : ''} ${this.sidebarCollapsed ? 'sidebar-collapsed' : ''}">
+        <div class="sidebar-hover-zone" id="sidebar-hover-zone"></div>
         ${this.renderSidebar()}
         ${this.renderHeader()}
         ${this.renderTopbar(breadcrumbItems)}
@@ -225,6 +261,7 @@ const App = {
         </div>
       </div>
       <div id="modal-container"></div>
+
       ${this.showNotifPanel ? this.renderNotifPanel() : ''}
       ${this.mobileMenuOpen ? '<div class="sidebar-overlay" onclick="App.toggleMobileMenu()"></div>' : ''}
     `;
@@ -233,7 +270,45 @@ const App = {
     setTimeout(() => {
       const mc = document.getElementById('main-content');
       if (mc) mc.classList.remove('is-loading');
-    }, 400);
+      // Call afterRender hook for Chart.js & other post-render init
+      const currentPage = this.pages[this.currentPage] || this.pages.dashboard;
+      if (this.currentPage === 'dashboard' && DashboardPage.afterRender) {
+        DashboardPage.afterRender();
+      }
+    }, 100);
+
+    // Setup sidebar auto-reveal on hover
+    this.setupSidebarHover();
+  },
+
+  /* ── Sidebar Auto-Reveal ─────────────────── */
+  setupSidebarHover() {
+    const zone = document.getElementById('sidebar-hover-zone');
+    const sidebar = document.querySelector('.sidebar');
+    if (!zone || !sidebar) return;
+
+    let hideTimeout = null;
+
+    const showSidebar = () => {
+      if (!this.sidebarCollapsed) return;
+      clearTimeout(hideTimeout);
+      sidebar.classList.add('sidebar-peek');
+    };
+
+    const hideSidebar = () => {
+      hideTimeout = setTimeout(() => {
+        sidebar.classList.remove('sidebar-peek');
+      }, 300);
+    };
+
+    zone.addEventListener('mouseenter', showSidebar);
+    sidebar.addEventListener('mouseenter', () => {
+      if (!this.sidebarCollapsed) return;
+      clearTimeout(hideTimeout);
+      sidebar.classList.add('sidebar-peek');
+    });
+    sidebar.addEventListener('mouseleave', hideSidebar);
+    zone.addEventListener('mouseleave', hideSidebar);
   },
 
   /* ── Header ────────────────────────────────── */
@@ -334,19 +409,33 @@ const App = {
   },
 
   /* ── Topbar ────────────────────────────────── */
+  // Breadcrumb label → first page ID mapping
+  breadcrumbMap: {
+    'Dashboard': 'dashboard',
+    'Perencanaan Kinerja': 'perencanaan_sasaran',
+    'Pengukuran Kinerja': 'pengukuran_capaian',
+    'Pelaporan Kinerja': 'pelaporan',
+    'Evaluasi Kinerja': 'evaluasi_lembar_kerja',
+    'Dokumen': 'dokumen_kinerja',
+    'Informasi Lainnya': 'informasi_unit',
+  },
+
   renderTopbar(breadcrumbs) {
     const crumbs = breadcrumbs.map((b, i) => {
       const isLast = i === breadcrumbs.length - 1;
       if (isLast) return `<span class="current">${b}</span>`;
-      if (i === 0 && b !== 'Dashboard') {
-        return `<a onclick="App.navigate('dashboard')">Dashboard</a><span class="separator">›</span><span>${b}</span><span class="separator">›</span>`;
-      }
-      return `<a onclick="App.navigate('dashboard')">${b}</a><span class="separator">›</span>`;
+      const targetPage = this.breadcrumbMap[b] || 'dashboard';
+      return `<a class="breadcrumb-link" onclick="App.navigate('${targetPage}')">${b}</a><span class="separator">›</span>`;
     }).join('');
+
+    // Always prepend Dashboard if first crumb isn't Dashboard
+    const dashPrefix = (breadcrumbs[0] !== 'Dashboard')
+      ? `<a class="breadcrumb-link" onclick="App.navigate('dashboard')">Dashboard</a><span class="separator">›</span>`
+      : '';
 
     return `
       <div class="topbar">
-        <div class="topbar-breadcrumb">${crumbs}</div>
+        <div class="topbar-breadcrumb">${dashPrefix}${crumbs}</div>
         <div class="topbar-filters">
           <select class="form-select" style="min-width:150px;padding:6px 30px 6px 10px;font-size:0.8125rem" onchange="MockData.activePeriod.quarter=this.value;App.renderPage()">
             <option value="TW I" selected>2026 — TW I</option>
@@ -465,11 +554,25 @@ const App = {
   },
 
   logout() {
+    // Show confirmation modal
+    const content = '<div style="text-align:center;padding:var(--space-xl)">'
+      + '<div style="font-size:4rem;margin-bottom:var(--space-md)">🚪</div>'
+      + '<h2 style="color:#334155;margin-bottom:var(--space-sm)">Keluar dari Sistem?</h2>'
+      + '<p class="text-muted">Anda akan keluar dari akun <strong>' + (MockData.currentUser.fullName || '').split(',')[0] + '</strong>.</p>'
+      + '<p style="font-size:13px;color:#94a3b8;margin-top:8px">Sesi Anda akan diakhiri dan Anda harus login kembali.</p>'
+      + '</div>';
+    const footer = '<button class="btn btn-ghost" onclick="App.closeModal()">Batal</button>'
+      + '<button class="btn" style="background:#dc2626;color:#fff;border:none" onclick="App.confirmLogout()">🚪 Ya, Keluar</button>';
+    document.getElementById('modal-container').innerHTML = UI.modal('Konfirmasi Logout', content, footer);
+  },
+
+  confirmLogout() {
     this.isLoggedIn = false;
     this.currentPage = 'login';
     this.expandedMenus = {};
     localStorage.removeItem('kinerjaku_loggedIn');
     localStorage.removeItem('kinerjaku_user');
+    this.closeModal();
     this.renderPage();
   }
 };

@@ -35,35 +35,7 @@ const DashboardPage = {
         ${UI.summaryCard('✅', onTrack, 'On Track (≥90%)', 'green')}
       </div>
 
-      <!-- ══════ 1. PERENCANAAN KINERJA ══════ -->
-      <div style="margin-top:28px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:1.2rem">📋</span>
-        <h2 style="font-size:15px;font-weight:700;margin:0;color:#2d3748">Perencanaan Kinerja</h2>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px">
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:var(--primary-600)">${totalSasaran}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Sasaran Strategis</div>
-        </div>
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:var(--accent-600, #e67e22)">${totalIndikator}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Indikator Kinerja Utama</div>
-        </div>
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:var(--success-600, #27ae60)">${totalRA}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Rencana Aksi</div>
-        </div>
-      </div>
-      <div class="card" style="margin-bottom:8px">
-        <div class="card-header"><h3 class="card-title">📊 Status Rencana Aksi</h3></div>
-        <div class="card-body">
-          ${UI.barChart([
-      { label: 'Selesai', value: completedRA.length, displayValue: completedRA.length.toString(), color: 'var(--success-500)' },
-      { label: 'On Track', value: ongoingRA.length, displayValue: ongoingRA.length.toString(), color: 'var(--primary-500)' },
-      { label: 'Terlambat', value: delayedRA.length, displayValue: delayedRA.length.toString(), color: 'var(--danger-500, #e74c3c)' },
-    ], Math.max(completedRA.length, ongoingRA.length, delayedRA.length) + 2)}
-        </div>
-      </div>
+
 
       <!-- ══════ 2. PENGUKURAN KINERJA ══════ -->
       <div style="margin-top:28px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
@@ -225,71 +197,6 @@ const DashboardPage = {
         </div>
       </div>
 
-      <!-- ══════ 5. DOKUMEN ══════ -->
-      <div style="margin-top:28px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:1.2rem">📁</span>
-        <h2 style="font-size:15px;font-weight:700;margin:0;color:#2d3748">Dokumen</h2>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px">
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:var(--primary-600)">${MockData.dokumen ? MockData.dokumen.length : 8}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Dokumen Kinerja</div>
-        </div>
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:#9b59b6">${totalUnits}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Pohon Kinerja Unit</div>
-        </div>
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:#e67e22">${totalIndikator}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Manual Indikator</div>
-        </div>
-      </div>
-
-      <!-- ══════ 6. INFORMASI ══════ -->
-      <div style="margin-top:28px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:1.2rem">ℹ️</span>
-        <h2 style="font-size:15px;font-weight:700;margin:0;color:#2d3748">Informasi</h2>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:var(--primary-600)">${totalAllUnits}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Total Unit Kerja</div>
-        </div>
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:var(--success-600, #27ae60)">${totalUnits}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Unit Eselon I</div>
-        </div>
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:#e67e22">${MockData.units.filter(u => u.level === 2).length}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Unit Eselon II</div>
-        </div>
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:20px;text-align:center">
-          <div style="font-size:2rem;font-weight:800;color:#9b59b6">${typeof LoginPage !== 'undefined' ? LoginPage.accounts.length : 0}</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Total Pengguna</div>
-        </div>
-      </div>
-
-      <!-- Aktivitas Terkini -->
-      <div class="card" style="margin-bottom:8px">
-        <div class="card-header"><h3 class="card-title">📋 Aktivitas Terkini</h3></div>
-        <div class="card-body">
-          ${(() => {
-        const logs = (MockData.activityLog || []).slice(-8).reverse();
-        if (!logs.length) return '<div style="text-align:center;color:#a0aec0;padding:20px">Belum ada aktivitas</div>';
-        return logs.map(l => {
-          const icons = { create: '➕', edit: '✏️', delete: '🗑️', login: '🔑', export: '📥', upload: '📤' };
-          const icon = icons[l.action] || '📌';
-          return `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
-          <span style="font-size:1.1rem">${icon}</span>
-          <div style="flex:1">
-            <div style="font-size:13px;color:#2d3748">${l.detail}</div>
-            <div style="font-size:11px;color:#a0aec0;margin-top:2px">${l.module} · ${l.time || '-'}</div>
-          </div>
-        </div>`;
-        }).join('');
-      })()}
-        </div>
-      </div>
 
       <!-- ══════ 7. PERBANDINGAN ANTAR PERIODE ══════ -->
       <div style="margin-top:28px;margin-bottom:16px;display:flex;align-items:center;gap:8px">
@@ -300,13 +207,13 @@ const DashboardPage = {
         <div class="card">
           <div class="card-header"><h3 class="card-title">📊 Trend Capaian per Triwulan</h3></div>
           <div class="card-body">
-            ${DashboardPage.renderTrendChart()}
+            <canvas id="chart-trend" height="200"></canvas>
           </div>
         </div>
         <div class="card">
           <div class="card-header"><h3 class="card-title">🏢 Perbandingan Unit Kerja per Periode</h3></div>
           <div class="card-body">
-            ${DashboardPage.renderUnitComparison()}
+            <canvas id="chart-unit-comparison" height="200"></canvas>
           </div>
         </div>
       </div>
@@ -349,79 +256,138 @@ const DashboardPage = {
       </div>`;
   },
 
-  // ── Trend Chart (SVG bar chart) ───────────
-  renderTrendChart() {
-    const data = [
-      { period: 'TW I', value: 102.1, color: '#0C4A6E' },
-      { period: 'TW II', value: 95.4, color: '#0284c7' },
-      { period: 'TW III', value: 88.7, color: '#0d9488' },
-      { period: 'TW IV', value: 0, color: '#e2e8f0', label: 'Belum ada' },
-    ];
-    const maxVal = 120;
-    const barW = 60, gap = 30, chartH = 160;
-    const totalW = data.length * (barW + gap);
-    const bars = data.map((d, i) => {
-      const h = d.value > 0 ? (d.value / maxVal) * chartH : 8;
-      const x = i * (barW + gap) + gap / 2;
-      const y = chartH - h;
-      return `
-        <rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="${d.color}" opacity="${d.value > 0 ? 1 : 0.3}" />
-        <text x="${x + barW / 2}" y="${y - 8}" text-anchor="middle" font-size="12" font-weight="700" fill="${d.color}">${d.value > 0 ? d.value + '%' : '—'}</text>
-        <text x="${x + barW / 2}" y="${chartH + 18}" text-anchor="middle" font-size="11" fill="#64748b">${d.period}</text>`;
-    }).join('');
-    // Trend line
-    const points = data.filter(d => d.value > 0).map((d, i) => {
-      const x = i * (barW + gap) + gap / 2 + barW / 2;
-      const y = chartH - (d.value / maxVal) * chartH;
-      return `${x},${y}`;
-    }).join(' ');
-    return `
-      <svg width="100%" viewBox="0 0 ${totalW + 20} ${chartH + 30}" style="max-width:400px;margin:0 auto;display:block">
-        <line x1="0" y1="${chartH}" x2="${totalW + 10}" y2="${chartH}" stroke="#e2e8f0" stroke-width="1"/>
-        <line x1="0" y1="${chartH - (90 / maxVal) * chartH}" x2="${totalW + 10}" y2="${chartH - (90 / maxVal) * chartH}" stroke="#22c55e" stroke-width="1" stroke-dasharray="4"/>
-        <text x="${totalW + 12}" y="${chartH - (90 / maxVal) * chartH + 4}" font-size="9" fill="#22c55e">90%</text>
-        ${bars}
-        <polyline points="${points}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4"/>
-      </svg>
-      <div style="display:flex;justify-content:center;gap:16px;margin-top:12px;font-size:11px;color:#64748b">
-        <span>🟦 Capaian Rata-rata</span>
-        <span style="color:#22c55e">--- Target 90%</span>
-        <span style="color:#f59e0b">⋯ Trend</span>
-      </div>`;
+  // ── Chart.js Interactive Charts ─────────────
+  _chartInstances: {},
+
+  afterRender() {
+    // Destroy old chart instances to avoid canvas reuse errors
+    Object.values(this._chartInstances).forEach(function (c) { if (c) c.destroy(); });
+    this._chartInstances = {};
+
+    this.initTrendChart();
+    this.initUnitComparisonChart();
   },
 
-  // ── Unit Comparison ───────────────────────
-  renderUnitComparison() {
-    const units = [
-      { name: 'DJPT', tw1: 108.3, tw2: 97.2 },
-      { name: 'DJPB', tw1: 95.1, tw2: 92.8 },
-      { name: 'DJPDSPKP', tw1: 88.5, tw2: 85.3 },
-      { name: 'Setjen', tw1: 102.7, tw2: 98.1 },
-    ];
-    const rows = units.map(u => `
-      <tr>
-        <td style="padding:8px 10px;font-weight:600;font-size:13px;border-bottom:1px solid #f1f5f9;color:#334155">${u.name}</td>
-        <td style="padding:8px 10px;font-size:13px;border-bottom:1px solid #f1f5f9;text-align:center">
-          <span style="font-weight:700;color:${u.tw1 >= 90 ? '#15803d' : '#dc2626'}">${u.tw1}%</span>
-        </td>
-        <td style="padding:8px 10px;font-size:13px;border-bottom:1px solid #f1f5f9;text-align:center">
-          <span style="font-weight:700;color:${u.tw2 >= 90 ? '#15803d' : u.tw2 >= 60 ? '#f59e0b' : '#dc2626'}">${u.tw2}%</span>
-        </td>
-        <td style="padding:8px 10px;font-size:13px;border-bottom:1px solid #f1f5f9;text-align:center">
-          ${u.tw2 >= u.tw1 ? '<span style="color:#15803d">📈 ↑</span>' : '<span style="color:#dc2626">📉 ↓</span>'}
-          <span style="font-size:11px;color:#64748b">${Math.abs(u.tw2 - u.tw1).toFixed(1)}%</span>
-        </td>
-      </tr>`).join('');
-    return `
-      <table style="width:100%;border-collapse:collapse">
-        <thead><tr>
-          <th style="padding:8px 10px;font-size:11px;font-weight:700;border-bottom:2px solid #e2e8f0;text-align:left;color:#64748b">Unit</th>
-          <th style="padding:8px 10px;font-size:11px;font-weight:700;border-bottom:2px solid #e2e8f0;text-align:center;color:#0C4A6E">TW I</th>
-          <th style="padding:8px 10px;font-size:11px;font-weight:700;border-bottom:2px solid #e2e8f0;text-align:center;color:#0284c7">TW II</th>
-          <th style="padding:8px 10px;font-size:11px;font-weight:700;border-bottom:2px solid #e2e8f0;text-align:center;color:#64748b">Trend</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
+  initTrendChart() {
+    var canvas = document.getElementById('chart-trend');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var capaianList = MockData.capaian;
+    var twI = capaianList.length ? parseFloat((capaianList.reduce(function (s, c) { return s + c.pct; }, 0) / capaianList.length).toFixed(1)) : 0;
+
+    this._chartInstances.trend = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['TW I', 'TW II', 'TW III', 'TW IV'],
+        datasets: [
+          {
+            label: 'Capaian Rata-rata (%)',
+            data: [twI, 95.4, 88.7, null],
+            borderColor: '#0C4A6E',
+            backgroundColor: 'rgba(12, 74, 110, 0.1)',
+            borderWidth: 2.5,
+            pointRadius: 5,
+            pointBackgroundColor: '#0C4A6E',
+            pointHoverRadius: 8,
+            fill: true,
+            tension: 0.3,
+            spanGaps: false
+          },
+          {
+            label: 'Target Minimum (90%)',
+            data: [90, 90, 90, 90],
+            borderColor: '#22c55e',
+            borderWidth: 1.5,
+            borderDash: [6, 4],
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, font: { size: 11 } } },
+          tooltip: {
+            backgroundColor: '#0C4A6E',
+            titleFont: { size: 13 },
+            bodyFont: { size: 12 },
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function (ctx) { return ctx.dataset.label + ': ' + (ctx.raw !== null ? ctx.raw + '%' : 'Belum ada data'); }
+            }
+          }
+        },
+        scales: {
+          y: {
+            min: 0, max: 120,
+            ticks: { callback: function (v) { return v + '%'; }, font: { size: 11 } },
+            grid: { color: '#f1f5f9' }
+          },
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+      }
+    });
+  },
+
+  initUnitComparisonChart() {
+    var canvas = document.getElementById('chart-unit-comparison');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+
+    var units = ['DJPT', 'DJPB', 'DJPDSPKP', 'Setjen'];
+    var tw1Data = [108.3, 95.1, 88.5, 102.7];
+    var tw2Data = [97.2, 92.8, 85.3, 98.1];
+
+    this._chartInstances.unitComparison = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: units,
+        datasets: [
+          {
+            label: 'TW I',
+            data: tw1Data,
+            backgroundColor: '#0C4A6E',
+            borderRadius: 4,
+            barPercentage: 0.7
+          },
+          {
+            label: 'TW II',
+            data: tw2Data,
+            backgroundColor: '#0284c7',
+            borderRadius: 4,
+            barPercentage: 0.7
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom', labels: { usePointStyle: true, font: { size: 11 } } },
+          tooltip: {
+            backgroundColor: '#0C4A6E',
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function (ctx) { return ctx.dataset.label + ': ' + ctx.raw + '%'; }
+            }
+          }
+        },
+        scales: {
+          y: {
+            min: 0, max: 130,
+            ticks: { callback: function (v) { return v + '%'; }, font: { size: 11 } },
+            grid: { color: '#f1f5f9' }
+          },
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+      }
+    });
   },
 
   // ── Deadline Reminders ────────────────────
